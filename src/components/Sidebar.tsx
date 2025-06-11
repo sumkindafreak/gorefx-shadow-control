@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { 
-  Lightning, 
-  Fire, 
+  Zap, 
+  Flame, 
   Cloud 
 } from 'lucide-react';
 
@@ -14,12 +14,12 @@ interface SidebarProps {
 }
 
 const navigationItems = [
-  { id: 'live-fx' as DashboardTab, label: 'Live FX', icon: Fire, description: 'Real-time control' },
-  { id: 'timeline' as DashboardTab, label: 'Timeline', icon: Lightning, description: 'Scene editor' },
+  { id: 'live-fx' as DashboardTab, label: 'Live FX', icon: Flame, description: 'Real-time control' },
+  { id: 'timeline' as DashboardTab, label: 'Timeline', icon: Zap, description: 'Scene editor' },
   { id: 'audio' as DashboardTab, label: 'Audio', icon: Cloud, description: 'Sound manager' },
-  { id: 'diagnostics' as DashboardTab, label: 'Diagnostics', icon: Lightning, description: 'System status' },
+  { id: 'diagnostics' as DashboardTab, label: 'Diagnostics', icon: Zap, description: 'System status' },
   { id: 'forum' as DashboardTab, label: 'HauntSync', icon: Cloud, description: 'Community' },
-  { id: 'settings' as DashboardTab, label: 'Settings', icon: Lightning, description: 'Configuration' },
+  { id: 'settings' as DashboardTab, label: 'Settings', icon: Zap, description: 'Configuration' },
   { id: 'help' as DashboardTab, label: 'Help', icon: Cloud, description: 'Support' },
 ];
 
