@@ -7,6 +7,9 @@ import { LiveFXPanel } from './LiveFXPanel';
 import { TimelineEditor } from './TimelineEditor';
 import { AudioManager } from './AudioManager';
 import { DiagnosticsPanel } from './DiagnosticsPanel';
+import { ForumPanel } from './ForumPanel';
+import { SettingsPanel } from './SettingsPanel';
+import { HelpPanel } from './HelpPanel';
 
 type DashboardTab = 'live-fx' | 'timeline' | 'audio' | 'diagnostics' | 'forum' | 'settings' | 'help';
 
@@ -25,11 +28,11 @@ export const Dashboard: React.FC = () => {
       case 'diagnostics':
         return <DiagnosticsPanel />;
       case 'forum':
-        return <div className="p-6 text-center text-gore-accent">🔧 HauntSync Forum - Coming Soon</div>;
+        return <ForumPanel />;
       case 'settings':
-        return <div className="p-6 text-center text-gore-accent">⚙️ Settings Panel - Coming Soon</div>;
+        return <SettingsPanel />;
       case 'help':
-        return <div className="p-6 text-center text-gore-accent">❓ Help & About - Coming Soon</div>;
+        return <HelpPanel />;
       default:
         return <LiveFXPanel />;
     }

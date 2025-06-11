@@ -1,135 +1,161 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  Flame, 
+  Cloud, 
+  Zap, 
+  DoorOpen, 
+  Wind,
+  Lightbulb,
+  Volume2,
+  Skull
+} from 'lucide-react';
 
-interface FXItem {
+interface FXButton {
   id: string;
   name: string;
-  category: 'fire' | 'fog' | 'lighting' | 'pneumatic' | 'audio';
+  icon: React.ElementType;
+  category: 'fire' | 'fog' | 'lighting' | 'mechanical' | 'sound' | 'pyro';
   active: boolean;
   dangerous: boolean;
-  relay: number;
 }
 
-const fxItems: FXItem[] = [
-  { id: 'fx-1', name: 'Main Fire Burst', category: 'fire', active: false, dangerous: true, relay: 1 },
-  { id: 'fx-2', name: 'Fog Machine 1', category: 'fog', active: false, dangerous: false, relay: 2 },
-  { id: 'fx-3', name: 'Strobe Array', category: 'lighting', active: false, dangerous: false, relay: 3 },
-  { id: 'fx-4', name: 'Pneumatic Jump', category: 'pneumatic', active: false, dangerous: false, relay: 4 },
-  { id: 'fx-5', name: 'Pyro Flash', category: 'fire', active: false, dangerous: true, relay: 5 },
-  { id: 'fx-6', name: 'Haze Machine', category: 'fog', active: false, dangerous: false, relay: 6 },
-  { id: 'fx-7', name: 'UV Black Lights', category: 'lighting', active: false, dangerous: false, relay: 7 },
-  { id: 'fx-8', name: 'Air Cannon', category: 'pneumatic', active: false, dangerous: false, relay: 8 },
-];
-
-const categoryIcons = {
-  fire: '🔥',
-  fog: '🌫️',
-  lighting: '⚡',
-  pneumatic: '💨',
-  audio: '🔊'
-};
-
-const categoryColors = {
-  fire: 'border-gore-red bg-gore-red/10',
-  fog: 'border-gray-400 bg-gray-400/10',
-  lighting: 'border-yellow-400 bg-yellow-400/10',
-  pneumatic: 'border-blue-400 bg-blue-400/10',
-  audio: 'border-purple-400 bg-purple-400/10'
-};
-
 export const LiveFXPanel: React.FC = () => {
-  const [fxStates, setFxStates] = useState<Record<string, boolean>>({});
+  const { toast } = useToast();
+  const [fxButtons, setFxButtons] = useState<FXButton[]>([
+    { id: 'fire-1', name: 'Fire Jet 1', icon: Flame, category: 'fire', active: false, dangerous: true },
+    { id: 'fire-2', name: 'Fire Jet 2', icon: Flame, category: 'fire', active: false, dangerous: true },
+    { id: 'fog-1', name: 'Low Fog', icon: Cloud, category: 'fog', active: false, dangerous: false },
+    { id: 'fog-2', name: 'Haze Machine', icon: Cloud, category: 'fog', active: false, dangerous: false },
+    { id: 'strobe-1', name: 'Strobe Light', icon: Zap, category: 'lighting', active: false, dangerous: false },
+    { id: 'strobe-2', name: 'Flash Pod', icon: Lightbulb, category: 'lighting', active: false, dangerous: false },
+    { id: 'door-1', name: 'Coffin Door', icon: DoorOpen, category: 'mechanical', active: false, dangerous: false },
+    { id: 'air-1', name: 'Air Blast', icon: Wind, category: 'mechanical', active: false, dangerous: false },
+    { id: 'sound-1', name: 'Scream FX', icon: Volume2, category: 'sound', active: false, dangerous: false },
+    { id: 'pyro-1', name: 'Flash Powder', icon: Skull, category: 'pyro', active: false, dangerous: true },
+  ]);
+  
   const [triggerLog, setTriggerLog] = useState<string[]>([]);
 
-  const toggleFX = (fx: FXItem) => {
-    // Safety confirmation for dangerous FX
-    if (fx.dangerous && !fxStates[fx.id]) {
-      const confirmed = window.confirm(`⚠️ DANGER: ${fx.name} involves fire/pyrotechnics. Continue?`);
+  const sendCommand = (command: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = `${timestamp} - ${command}`;
+    setTriggerLog(prev => [logEntry, ...prev.slice(0, 9)]);
+    
+    // Send WebSocket command to ESP32
+    console.log(`Sending command: ${command}`);
+    
+    // In a real implementation, this would send to ws://192.168.4.1/ws
+    // const ws = new WebSocket('ws://192.168.4.1/ws');
+    // ws.send(JSON.stringify({ type: 'command', command, timestamp: new Date().toISOString() }));
+  };
+
+  const handleFXToggle = (fxId: string) => {
+    const fx = fxButtons.find(f => f.id === fxId);
+    if (!fx) return;
+
+    if (fx.dangerous) {
+      const confirmed = window.confirm(`⚠️ DANGER: Are you sure you want to trigger ${fx.name}? This controls live pyrotechnics!`);
       if (!confirmed) return;
     }
 
-    const newState = !fxStates[fx.id];
-    setFxStates(prev => ({ ...prev, [fx.id]: newState }));
+    setFxButtons(prev => prev.map(f => 
+      f.id === fxId ? { ...f, active: !f.active } : f
+    ));
 
-    // Add to trigger log
-    const timestamp = new Date().toLocaleTimeString();
-    const action = newState ? 'ACTIVATED' : 'DEACTIVATED';
-    setTriggerLog(prev => [`${timestamp}: ${fx.name} ${action}`, ...prev.slice(0, 9)]);
+    const command = fx.active ? `${fxId.toUpperCase()}_OFF` : `${fxId.toUpperCase()}_ON`;
+    sendCommand(command);
 
-    // Vibration feedback
+    toast({
+      title: fx.active ? "FX Deactivated" : "FX Activated",
+      description: fx.name,
+      duration: 2000
+    });
+
+    // Vibration feedback for mobile
     if (navigator.vibrate) {
-      navigator.vibrate(newState ? 100 : 50);
+      navigator.vibrate(100);
     }
-
-    // Send command to Showduino
-    console.log(`Command: RELAY_${fx.relay}_${newState ? 'ON' : 'OFF'}`);
   };
 
-  const groupedFX = fxItems.reduce((acc, fx) => {
-    if (!acc[fx.category]) acc[fx.category] = [];
-    acc[fx.category].push(fx);
-    return acc;
-  }, {} as Record<string, FXItem[]>);
+  const categorizeButtons = () => {
+    const categories = {
+      fire: fxButtons.filter(f => f.category === 'fire'),
+      fog: fxButtons.filter(f => f.category === 'fog'),
+      lighting: fxButtons.filter(f => f.category === 'lighting'),
+      mechanical: fxButtons.filter(f => f.category === 'mechanical'),
+      sound: fxButtons.filter(f => f.category === 'sound'),
+      pyro: fxButtons.filter(f => f.category === 'pyro'),
+    };
+    return categories;
+  };
+
+  const categories = categorizeButtons();
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gore-text">Live FX Control</h1>
-        <div className="text-sm text-gore-accent">
-          {Object.values(fxStates).filter(Boolean).length} / {fxItems.length} Active
-        </div>
+      <div>
+        <h2 className="text-2xl font-bold text-gore-red mb-2">🔥 Live FX Control</h2>
+        <p className="text-gore-accent">Real-time control of horror effects</p>
       </div>
 
-      {/* FX Controls by Category */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {Object.entries(groupedFX).map(([category, items]) => (
-          <Card key={category} className={`horror-panel p-4 ${categoryColors[category as keyof typeof categoryColors]}`}>
-            <h3 className="font-semibold text-lg mb-4 flex items-center space-x-2">
-              <span className="text-2xl">{categoryIcons[category as keyof typeof categoryIcons]}</span>
-              <span className="capitalize">{category} Effects</span>
-            </h3>
-            
-            <div className="grid grid-cols-2 gap-3">
-              {items.map((fx) => (
-                <Button
-                  key={fx.id}
-                  onClick={() => toggleFX(fx)}
-                  className={`fx-button h-auto p-3 flex flex-col items-center space-y-1 ${
-                    fxStates[fx.id] ? 'active' : ''
-                  }`}
-                >
-                  <div className="text-lg">
-                    {categoryIcons[fx.category]}
-                    {fx.dangerous && '⚠️'}
-                  </div>
-                  <div className="text-xs text-center leading-tight">
-                    {fx.name}
-                  </div>
-                  <div className="text-xs opacity-60">
-                    Relay {fx.relay}
-                  </div>
-                </Button>
-              ))}
-            </div>
-          </Card>
+      {/* FX Categories */}
+      <div className="grid gap-6">
+        {Object.entries(categories).map(([categoryName, buttons]) => (
+          buttons.length > 0 && (
+            <Card key={categoryName} className="horror-panel p-6">
+              <h3 className="text-lg font-semibold text-gore-text mb-4 capitalize">
+                {categoryName === 'fire' && '🔥'} 
+                {categoryName === 'fog' && '🌫️'} 
+                {categoryName === 'lighting' && '⚡'} 
+                {categoryName === 'mechanical' && '🔧'} 
+                {categoryName === 'sound' && '🔊'} 
+                {categoryName === 'pyro' && '💀'} 
+                {categoryName} Effects
+              </h3>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                {buttons.map((fx) => {
+                  const Icon = fx.icon;
+                  return (
+                    <Button
+                      key={fx.id}
+                      onClick={() => handleFXToggle(fx.id)}
+                      className={`
+                        fx-button h-16 flex flex-col items-center justify-center gap-1 p-2
+                        ${fx.active ? 'active bg-gore-red hover:bg-gore-red/80' : ''}
+                        ${fx.dangerous ? 'border-gore-warning' : ''}
+                      `}
+                    >
+                      <Icon size={20} />
+                      <span className="text-xs text-center leading-tight">{fx.name}</span>
+                      {fx.dangerous && <span className="text-xs text-gore-warning">⚠️</span>}
+                    </Button>
+                  );
+                })}
+              </div>
+            </Card>
+          )
         ))}
       </div>
 
       {/* Quick Trigger Log */}
-      <Card className="horror-panel p-4">
-        <h3 className="font-semibold mb-3">Recent Activity</h3>
-        <div className="max-h-32 overflow-y-auto space-y-1">
+      <Card className="horror-panel p-6">
+        <h3 className="text-lg font-semibold text-gore-text mb-4">📋 Trigger Log</h3>
+        <div className="bg-gore-black rounded-sm p-4 h-48 overflow-y-auto">
           {triggerLog.length === 0 ? (
-            <p className="text-gore-accent text-sm">No recent activity</p>
+            <p className="text-gore-accent text-sm">No recent triggers...</p>
           ) : (
-            triggerLog.map((entry, index) => (
-              <div key={index} className="text-sm font-mono text-gore-text/80">
-                {entry}
-              </div>
-            ))
+            <div className="space-y-1">
+              {triggerLog.map((entry, index) => (
+                <div key={index} className="text-sm text-gore-text font-mono">
+                  {entry}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </Card>
