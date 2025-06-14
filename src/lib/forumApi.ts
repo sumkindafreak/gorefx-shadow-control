@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert } from "@/integrations/supabase/types";
 
@@ -56,20 +55,28 @@ export const getThreadsForCategory = async (categoryId: string): Promise<ThreadW
   // We cast the returned data to our expected type.
   const threads = data as RpcThread[];
 
-  // Now we can safely map over the typed array.
+  // Now we can safely map over the typed array, constructing the full object explicitly
+  // to avoid type inference issues.
   return threads.map((thread) => ({
-    ...thread,
+    // Properties from Tables<'forum_threads'>
+    id: thread.id,
+    user_id: thread.user_id,
+    category_id: thread.category_id ?? categoryId,
+    title: thread.title,
+    content: thread.content ?? "",
+    created_at: thread.created_at,
+    updated_at: thread.updated_at ?? thread.created_at,
+
+    // Properties from ThreadWithAuthor
     profiles: {
       full_name: thread.author_full_name,
       avatar_url: thread.author_avatar_url,
     },
+
+    // Properties from ThreadWithAuthorAndReplies
+    reply_count: thread.reply_count,
     author_full_name: thread.author_full_name,
     author_avatar_url: thread.author_avatar_url,
-    reply_count: thread.reply_count,
-    // Add fallback for required fields if missing from RPC (these are required by ThreadWithAuthorAndReplies)
-    category_id: thread.category_id ?? categoryId,
-    content: thread.content ?? "",
-    updated_at: thread.updated_at ?? thread.created_at,
   }));
 };
 
