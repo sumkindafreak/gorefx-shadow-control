@@ -60,7 +60,8 @@ const NewThreadDialog = ({ categoryId }: NewThreadDialogProps) => {
       return;
     }
     mutation.mutate({
-      ...values,
+      title: values.title,
+      content: values.content,
       category_id: categoryId,
       user_id: user.id,
     });

@@ -5,8 +5,11 @@ import { Tables, TablesInsert } from "@/integrations/supabase/types";
 export type ThreadWithAuthor = Tables<'forum_threads'> & {
   profiles: Pick<Tables<'profiles'>, 'full_name' | 'avatar_url'> | null;
 };
+
 export type ThreadWithAuthorAndReplies = ThreadWithAuthor & {
   reply_count: number;
+  author_full_name: string | null;
+  author_avatar_url: string | null;
 }
 
 export type ReplyWithAuthor = Tables<'forum_replies'> & {
@@ -30,6 +33,8 @@ export const getThreadsForCategory = async (categoryId: string): Promise<ThreadW
       .rpc('get_threads_with_reply_count', { category_id_param: categoryId });
 
     if (error) throw error;
+    
+    if (!data) return [];
     
     // The rpc function will return threads with profiles and reply_count
     return data.map((thread: any) => ({
