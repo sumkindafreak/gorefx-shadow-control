@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Wifi, BatteryFull, Clock, WifiOff, BatteryLow, LogIn, LogOut, Crown } from 'lucide-react';
+import { Wifi, BatteryFull, Clock, WifiOff, BatteryLow, LogIn, LogOut, Crown, Fullscreen, Shrink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,10 +16,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 const Header = () => {
     const [time, setTime] = useState(new Date());
+    const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
     const { isConnected, deviceStatus } = useWebSocket();
     const { user, profile, signOut, loading, subscription } = useAuth();
 
@@ -27,6 +29,26 @@ const Header = () => {
         const timerId = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timerId);
     }, []);
+
+    useEffect(() => {
+      const handleFullScreenChange = () => {
+        setIsFullscreen(!!document.fullscreenElement);
+      };
+      document.addEventListener('fullscreenchange', handleFullScreenChange);
+      return () => document.removeEventListener('fullscreenchange', handleFullScreenChange);
+    }, []);
+
+    const toggleFullScreen = () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    };
 
     const getBatteryIcon = () => {
         if (!isConnected || deviceStatus.battery === undefined) {
@@ -70,6 +92,17 @@ const Header = () => {
                     <Clock size={16} />
                     <span>{time.toLocaleTimeString()}</span>
                 </div>
+                
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" onClick={toggleFullScreen}>
+                            {isFullscreen ? <Shrink /> : <Fullscreen />}
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</p>
+                    </TooltipContent>
+                </Tooltip>
                 
                 {loading ? (
                     <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
