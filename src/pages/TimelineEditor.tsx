@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/AppSidebar";
 import Header from "@/components/layout/Header";
@@ -17,7 +17,10 @@ import TimelineHeader from "@/components/timeline/TimelineHeader";
 import TimelineContainer from "@/components/timeline/TimelineContainer";
 
 const TimelineEditor = () => {
-  const [tracks, setTracks] = useState<Track[]>([]);
+  const [history, setHistory] = useState<Track[][]>([[]]);
+  const [currentHistoryIndex, setCurrentHistoryIndex] = useState(0);
+  const tracks = history[currentHistoryIndex];
+
   const [pixelsPerSecond] = useState(50);
   const [totalDuration] = useState(60); // in seconds
   const [isLiveMode, setIsLiveMode] = useState(false);
@@ -32,6 +35,13 @@ const TimelineEditor = () => {
   } = usePlayback({ totalDuration });
 
   useEventTracker({ tracks, currentTime, isPlaying, isLiveMode });
+
+  const updateTracks = useCallback((updater: (prevTracks: Track[]) => Track[]) => {
+    const newTracks = updater(history[currentHistoryIndex]);
+    const newHistory = history.slice(0, currentHistoryIndex + 1);
+    setHistory([...newHistory, newTracks]);
+    setCurrentHistoryIndex(newHistory.length);
+  }, [history, currentHistoryIndex]);
   
   const addTrack = (type: Track['type']) => {
     const newTrack: Track = {
@@ -43,7 +53,7 @@ const TimelineEditor = () => {
         { id: `evt-${Date.now()}-2`, name: 'Another Event', start: 10, duration: 8, command: 'SAMPLE_COMMAND_2' },
       ]
     };
-    setTracks(prevTracks => [...prevTracks, newTrack]);
+    updateTracks(prevTracks => [...prevTracks, newTrack]);
   };
 
   const handleOpenEventEditor = (trackId: string, event: TimelineEvent) => {
@@ -55,7 +65,7 @@ const TimelineEditor = () => {
   };
   
   const handleSaveEvent = (trackId: string, updatedEvent: TimelineEvent) => {
-    setTracks(prevTracks => 
+    updateTracks(prevTracks => 
       prevTracks.map(track => {
         if (track.id === trackId) {
           return {
@@ -70,6 +80,14 @@ const TimelineEditor = () => {
     );
     handleCloseEventEditor();
   };
+
+  const handleUndo = () => {
+    if (currentHistoryIndex > 0) {
+      setCurrentHistoryIndex(currentHistoryIndex - 1);
+    }
+  };
+
+  const canUndo = currentHistoryIndex > 0;
 
   return (
     <SidebarProvider>
@@ -114,7 +132,11 @@ const TimelineEditor = () => {
               />
 
               <Card>
-                <TimelineHeader onAddTrack={addTrack} />
+                <TimelineHeader 
+                  onAddTrack={addTrack} 
+                  onUndo={handleUndo}
+                  canUndo={canUndo}
+                />
                 <CardContent>
                   <TimelineContainer
                     tracks={tracks}
