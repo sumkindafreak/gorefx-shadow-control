@@ -47,8 +47,16 @@ const systemNav = [
 ];
 
 const AppSidebar = () => {
-    const { state } = useSidebar();
+    const { state, setOpen, isMobile, setOpenMobile } = useSidebar();
     
+    const handleMenuItemClick = () => {
+      if (isMobile) {
+        setOpenMobile(false);
+      } else {
+        setOpen(false);
+      }
+    };
+
     return (
         <Sidebar>
             <SidebarHeader>
@@ -64,7 +72,7 @@ const AppSidebar = () => {
                             {mainNav.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild tooltip={item.title}>
-                                        <a href={item.href}>
+                                        <a href={item.href} onClick={handleMenuItemClick}>
                                             <item.icon />
                                             <span>{item.title}</span>
                                         </a>
@@ -80,7 +88,7 @@ const AppSidebar = () => {
                                      {connectivityNav.map((item) => (
                                         <SidebarMenuItem key={item.title}>
                                             <SidebarMenuButton asChild tooltip={item.title}>
-                                                <a href={item.href}>
+                                                <a href={item.href} onClick={handleMenuItemClick}>
                                                     <item.icon />
                                                     <span>{item.title}</span>
                                                 </a>
@@ -98,7 +106,7 @@ const AppSidebar = () => {
                                      {eventSequencerNav.map((item) => (
                                         <SidebarMenuItem key={item.title}>
                                              <SidebarMenuButton asChild tooltip={item.title}>
-                                                <a href={item.href}>
+                                                <a href={item.href} onClick={handleMenuItemClick}>
                                                     <item.icon />
                                                     <span>{item.title}</span>
                                                 </a>
@@ -116,7 +124,7 @@ const AppSidebar = () => {
                                      {systemNav.map((item) => (
                                         <SidebarMenuItem key={item.title}>
                                             <SidebarMenuButton asChild tooltip={item.title}>
-                                                <a href={item.href}>
+                                                <a href={item.href} onClick={handleMenuItemClick}>
                                                     <item.icon />
                                                     <span>{item.title}</span>
                                                 </a>
@@ -133,7 +141,7 @@ const AppSidebar = () => {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton asChild tooltip="App Settings">
-                            <a href="#">
+                            <a href="#" onClick={handleMenuItemClick}>
                                 <Settings />
                                 <span>App Settings</span>
                             </a>
@@ -141,7 +149,7 @@ const AppSidebar = () => {
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton asChild tooltip="Help & Support">
-                            <a href="#">
+                            <a href="#" onClick={handleMenuItemClick}>
                                 <HelpCircle />
                                 <span>Help & Support</span>
                             </a>
