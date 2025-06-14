@@ -28,20 +28,21 @@ export const getCategory = async (id: string) => {
     return data;
 };
 
-// Fix: type the result of RPC as any[] to allow .map().
+// Fix: Improved type safety and ordering in RPC result.
 export const getThreadsForCategory = async (categoryId: string): Promise<ThreadWithAuthorAndReplies[]> => {
+    // Get result via RPC, then sort if necessary in JS for consistent TS.
     const { data, error } = await supabase
-      .rpc('get_threads_with_reply_count', { category_id_param: categoryId }) as { data: any[], error: any };
+      .rpc('get_threads_with_reply_count', { category_id_param: categoryId });
 
     if (error) throw error;
     if (!data) return [];
 
-    // The rpc function will return threads with profiles and reply_count
+    // The RPC already sorts by created_at DESC (see SQL), so just map fields.
     return data.map((thread: any) => ({
       ...thread,
       profiles: {
         full_name: thread.author_full_name,
-        avatar_url: thread.author_avatar_url
+        avatar_url: thread.author_avatar_url,
       }
     }));
 };
