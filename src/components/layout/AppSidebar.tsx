@@ -65,7 +65,7 @@ const AppSidebar = () => {
                     <img
                         src="/lovable-uploads/7b515ee1-bcf7-41c6-bc79-85cb6df5d491.png"
                         alt="GoreFX"
-                        className={state === 'expanded' ? 'h-8 object-contain' : 'w-8 h-8 object-contain'}
+                        className={state === 'expanded' ? 'h-12 object-contain' : 'w-10 h-10 object-contain'}
                     />
                 </div>
             </SidebarHeader>
