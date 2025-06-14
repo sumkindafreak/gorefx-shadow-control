@@ -11,7 +11,6 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -23,6 +22,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { TimelineEvent } from './types';
+import { Textarea } from '@/components/ui/textarea';
 
 interface EventEditorProps {
   eventInfo: { trackId: string; event: TimelineEvent } | null;
@@ -35,6 +35,7 @@ const formSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
   start: z.coerce.number().min(0, 'Start time must be non-negative.'),
   duration: z.coerce.number().min(0.1, 'Duration must be at least 0.1s.'),
+  command: z.string().optional(),
 });
 
 const EventEditor: React.FC<EventEditorProps> = ({ eventInfo, isOpen, onClose, onSave }) => {
@@ -44,6 +45,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ eventInfo, isOpen, onClose, o
       name: '',
       start: 0,
       duration: 1,
+      command: '',
     },
   });
 
@@ -105,6 +107,23 @@ const EventEditor: React.FC<EventEditorProps> = ({ eventInfo, isOpen, onClose, o
                   <FormLabel>Duration (seconds)</FormLabel>
                   <FormControl>
                     <Input type="number" step="0.1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="command"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Command Line</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="e.g. LIGHTS_ON, PLAY_SOUND --file siren.mp3"
+                      {...field}
+                      value={field.value ?? ''}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

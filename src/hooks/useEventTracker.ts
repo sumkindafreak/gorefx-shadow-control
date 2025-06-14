@@ -35,6 +35,9 @@ export const useEventTracker = ({ tracks, currentTime, isPlaying, isLiveMode }: 
           newlyActive.add(event.id);
           if (!activeEventsRef.current.has(event.id)) {
             console.log(`EVENT START: ${event.name} on ${track.type} track "${track.name}"`);
+            if (event.command) {
+              console.log(`  > CMD: ${event.command}`);
+            }
           }
         }
       });

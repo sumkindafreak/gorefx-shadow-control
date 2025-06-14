@@ -4,6 +4,7 @@ export interface TimelineEvent {
   name: string;
   start: number; // in seconds
   duration: number; // in seconds
+  command?: string;
 }
 
 export interface Track {

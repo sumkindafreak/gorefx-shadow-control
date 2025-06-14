@@ -39,8 +39,8 @@ const TimelineEditor = () => {
       type: type,
       name: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Track ${tracks.filter(t => t.type === type).length + 1}`,
       events: [
-        { id: `evt-${Date.now()}-1`, name: 'Sample Event', start: 2, duration: 5 },
-        { id: `evt-${Date.now()}-2`, name: 'Another Event', start: 10, duration: 8 },
+        { id: `evt-${Date.now()}-1`, name: 'Sample Event', start: 2, duration: 5, command: 'SAMPLE_COMMAND_1' },
+        { id: `evt-${Date.now()}-2`, name: 'Another Event', start: 10, duration: 8, command: 'SAMPLE_COMMAND_2' },
       ]
     };
     setTracks(prevTracks => [...prevTracks, newTrack]);

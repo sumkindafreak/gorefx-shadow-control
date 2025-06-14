@@ -21,6 +21,8 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({ event, pixelsPerSecond, t
     left: `${event.start * pixelsPerSecond}px`,
     width: `${event.duration * pixelsPerSecond}px`,
   };
+  
+  const title = `${event.name} (Start: ${event.start}s, Duration: ${event.duration}s)${event.command ? `\nCommand: ${event.command}`: ''}`;
 
   return (
     <div
@@ -29,7 +31,7 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({ event, pixelsPerSecond, t
         "absolute top-1/2 -translate-y-1/2 h-4/5 rounded-md border text-white flex items-center px-2 cursor-pointer transition-colors",
         eventColorClasses[trackType]
       )}
-      title={`${event.name} (Start: ${event.start}s, Duration: ${event.duration}s)`}
+      title={title}
       onClick={onClick}
     >
       <span className="text-xs font-medium truncate pointer-events-none">{event.name}</span>
