@@ -1,4 +1,5 @@
 
+import React, { useState } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/AppSidebar";
 import Header from "@/components/layout/Header";
@@ -12,8 +13,21 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
+import TimelineTrack, { Track } from "@/components/timeline/TimelineTrack";
 
 const TimelineEditor = () => {
+  const [tracks, setTracks] = useState<Track[]>([]);
+
+  const addTrack = () => {
+    // For now, we only add lighting tracks. We can expand this later.
+    const newTrack: Track = {
+      id: `track-${Date.now()}`,
+      type: 'lighting',
+      name: `New Lighting Track ${tracks.filter(t => t.type === 'lighting').length + 1}`
+    };
+    setTracks(prevTracks => [...prevTracks, newTrack]);
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen w-full flex bg-background font-orbitron">
@@ -75,28 +89,32 @@ const TimelineEditor = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Active Timeline: "Untitled Show"</CardTitle>
-                   <Button variant="outline">
+                   <Button variant="outline" onClick={addTrack}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add Track
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <ResizablePanelGroup
-                    direction="vertical"
-                    className="min-h-[400px] rounded-lg border"
-                  >
-                    <ResizablePanel defaultSize={50}>
-                      <div className="flex h-full items-center justify-center p-6">
-                        <span className="font-semibold">Audio Track Area</span>
-                      </div>
-                    </ResizablePanel>
-                    <ResizableHandle withHandle />
-                    <ResizablePanel defaultSize={50}>
-                      <div className="flex h-full items-center justify-center p-6">
-                        <span className="font-semibold">Lighting & Effects Area</span>
-                      </div>
-                    </ResizablePanel>
-                  </ResizablePanelGroup>
+                  {tracks.length > 0 ? (
+                    <ResizablePanelGroup
+                      direction="vertical"
+                      className="min-h-[400px] rounded-lg border"
+                    >
+                      {tracks.map((track, index) => (
+                        <React.Fragment key={track.id}>
+                          <ResizablePanel>
+                            <TimelineTrack track={track} />
+                          </ResizablePanel>
+                          {index < tracks.length - 1 && <ResizableHandle withHandle />}
+                        </React.Fragment>
+                      ))}
+                    </ResizablePanelGroup>
+                  ) : (
+                     <div className="space-y-4 text-center text-muted-foreground py-16 border-2 border-dashed rounded-lg">
+                      <p className="font-semibold">This timeline is empty.</p>
+                      <p className="text-sm">Click "Add Track" to add a new track to get started.</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </main>
@@ -109,4 +127,3 @@ const TimelineEditor = () => {
 };
 
 export default TimelineEditor;
-
