@@ -9,30 +9,34 @@ export const usePlayback = ({ totalDuration }: UsePlaybackProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const animationFrameRef = useRef<number>();
-
-  const animate = useCallback((lastTime: number) => {
-    const time = performance.now();
-    const deltaTime = (time - lastTime) / 1000;
-    
-    setCurrentTime(prevTime => {
-      const newTime = prevTime + deltaTime;
-      if (newTime >= totalDuration) {
-        setIsPlaying(false);
-        return totalDuration;
-      }
-      animationFrameRef.current = requestAnimationFrame(() => animate(performance.now()));
-      return newTime;
-    });
-
-  }, [totalDuration]);
+  const lastTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (isPlaying) {
-      animationFrameRef.current = requestAnimationFrame(() => animate(performance.now()));
+      const loop = (time: number) => {
+        if (lastTimeRef.current === null) {
+          lastTimeRef.current = time;
+        }
+        const deltaTime = (time - lastTimeRef.current) / 1000;
+        lastTimeRef.current = time;
+
+        setCurrentTime(prevTime => {
+          const newTime = prevTime + deltaTime;
+          if (newTime >= totalDuration) {
+            setIsPlaying(false);
+            return totalDuration;
+          }
+          
+          animationFrameRef.current = requestAnimationFrame(loop);
+          return newTime;
+        });
+      };
+      animationFrameRef.current = requestAnimationFrame(loop);
     } else {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
+      lastTimeRef.current = null;
     }
 
     return () => {
@@ -40,7 +44,7 @@ export const usePlayback = ({ totalDuration }: UsePlaybackProps) => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isPlaying, animate]);
+  }, [isPlaying, totalDuration]);
 
   const handlePlayPause = useCallback(() => {
     if (isPlaying) {
