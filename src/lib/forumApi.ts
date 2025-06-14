@@ -29,7 +29,7 @@ export const getCategory = async (id: string) => {
 
 // Fix: Correct typing and ensure required fields for ThreadWithAuthorAndReplies
 export const getThreadsForCategory = async (categoryId: string): Promise<ThreadWithAuthorAndReplies[]> => {
-  type RpcArgs = { category_id_param: string };
+  // This is the shape of the data returned by the RPC function for a single thread.
   type RpcThread = {
     id: string;
     created_at: string;
@@ -38,20 +38,24 @@ export const getThreadsForCategory = async (categoryId: string): Promise<ThreadW
     author_full_name: string | null;
     author_avatar_url: string | null;
     reply_count: number;
-    // The following are required by ThreadWithAuthor
-    category_id: string;
-    content: string;
-    updated_at: string;
+    // The following are required by ThreadWithAuthor, but may not be returned by the RPC
+    category_id?: string;
+    content?: string;
+    updated_at?: string;
   };
 
+  // The .rpc() call is simplified. The returned `data` is of type `any`.
   const { data, error } = await supabase
-    .rpc<RpcArgs, RpcThread>('get_threads_with_reply_count', { category_id_param: categoryId });
+    .rpc('get_threads_with_reply_count', { category_id_param: categoryId });
 
   if (error) throw error;
   if (!data) return [];
 
-  // If category_id, content, updated_at are not returned by the RPC, we set dummy values to comply with the type
-  return data.map((thread) => ({
+  // We cast the returned data to our expected type.
+  const threads = data as RpcThread[];
+
+  // Now we can safely map over the typed array.
+  return threads.map((thread) => ({
     ...thread,
     profiles: {
       full_name: thread.author_full_name,
@@ -60,7 +64,7 @@ export const getThreadsForCategory = async (categoryId: string): Promise<ThreadW
     author_full_name: thread.author_full_name,
     author_avatar_url: thread.author_avatar_url,
     reply_count: thread.reply_count,
-    // Add fallback for required fields if missing from RPC (can be removed if present)
+    // Add fallback for required fields if missing from RPC (these are required by ThreadWithAuthorAndReplies)
     category_id: thread.category_id ?? categoryId,
     content: thread.content ?? "",
     updated_at: thread.updated_at ?? thread.created_at,
