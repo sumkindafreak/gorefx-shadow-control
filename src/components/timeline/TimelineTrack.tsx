@@ -1,13 +1,15 @@
 import React from 'react';
-import { Lightbulb, AudioLines, Wand2 } from 'lucide-react';
+import { Lightbulb, AudioLines, Wand2, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Track, TimelineEvent as TimelineEventType } from './types';
 import TimelineEvent from './TimelineEvent';
+import { Button } from '@/components/ui/button';
 
 interface TimelineTrackProps {
   track: Track;
   pixelsPerSecond: number;
   onEventClick: (trackId: string, event: TimelineEventType) => void;
+  onAddEvent: (trackId: string) => void;
 }
 
 const trackTypeDetails: Record<Track['type'], { icon: React.ElementType; colorClasses: string; iconColor: string }> = {
@@ -28,7 +30,7 @@ const trackTypeDetails: Record<Track['type'], { icon: React.ElementType; colorCl
     },
 };
 
-const TimelineTrack: React.FC<TimelineTrackProps> = ({ track, pixelsPerSecond, onEventClick }) => {
+const TimelineTrack: React.FC<TimelineTrackProps> = ({ track, pixelsPerSecond, onEventClick, onAddEvent }) => {
   const details = trackTypeDetails[track.type];
   const Icon = details.icon;
 
@@ -36,11 +38,17 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({ track, pixelsPerSecond, o
     <div className="h-full p-2 grid grid-cols-[240px_1fr] gap-2">
       {/* Track Header */}
       <div className={cn(
-          "h-full rounded-md border flex items-center justify-start p-4", 
+          "h-full rounded-md border flex items-center justify-between p-4", 
           details.colorClasses
         )}>
-        <Icon className={cn("w-5 h-5 mr-3 shrink-0", details.iconColor)} />
-        <span className="font-semibold text-sm truncate">{track.name}</span>
+        <div className='flex items-center truncate'>
+            <Icon className={cn("w-5 h-5 mr-3 shrink-0", details.iconColor)} />
+            <span className="font-semibold text-sm truncate">{track.name}</span>
+        </div>
+        <Button size="sm" variant="ghost" onClick={() => onAddEvent(track.id)} className="h-7 w-7 p-0">
+            <Plus className="h-4 w-4" />
+            <span className="sr-only">Add event to {track.name}</span>
+        </Button>
       </div>
 
       {/* Track Lane */}

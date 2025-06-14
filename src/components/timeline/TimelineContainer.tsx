@@ -16,6 +16,7 @@ interface TimelineContainerProps {
   pixelsPerSecond: number;
   currentTime: number;
   onEventClick: (trackId: string, event: TimelineEvent) => void;
+  onAddEvent: (trackId: string) => void;
 }
 
 const TimelineContainer: React.FC<TimelineContainerProps> = ({
@@ -23,7 +24,8 @@ const TimelineContainer: React.FC<TimelineContainerProps> = ({
   totalDuration,
   pixelsPerSecond,
   currentTime,
-  onEventClick
+  onEventClick,
+  onAddEvent,
 }) => {
   return (
     <>
@@ -44,6 +46,7 @@ const TimelineContainer: React.FC<TimelineContainerProps> = ({
                       track={track}
                       pixelsPerSecond={pixelsPerSecond}
                       onEventClick={onEventClick}
+                      onAddEvent={onAddEvent}
                     />
                   </ResizablePanel>
                   {index < tracks.length - 1 && <ResizableHandle withHandle />}

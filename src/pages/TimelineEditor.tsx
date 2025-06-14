@@ -22,7 +22,7 @@ const TimelineEditor = () => {
   const tracks = history[currentHistoryIndex];
 
   const [pixelsPerSecond] = useState(50);
-  const [totalDuration] = useState(60); // in seconds
+  const [totalDuration, setTotalDuration] = useState(60); // in seconds
   const [isLiveMode, setIsLiveMode] = useState(false);
   const [editingEventInfo, setEditingEventInfo] = useState<{ trackId: string; event: TimelineEvent } | null>(null);
 
@@ -48,12 +48,32 @@ const TimelineEditor = () => {
       id: `track-${Date.now()}`,
       type: type,
       name: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Track ${tracks.filter(t => t.type === type).length + 1}`,
-      events: [
-        { id: `evt-${Date.now()}-1`, name: 'Sample Event', start: 2, duration: 5, command: 'SAMPLE_COMMAND_1' },
-        { id: `evt-${Date.now()}-2`, name: 'Another Event', start: 10, duration: 8, command: 'SAMPLE_COMMAND_2' },
-      ]
+      events: []
     };
     updateTracks(prevTracks => [...prevTracks, newTrack]);
+  };
+
+  const handleAddEvent = (trackId: string) => {
+    updateTracks(prevTracks =>
+      prevTracks.map(track => {
+        if (track.id === trackId) {
+          const newEvent: TimelineEvent = {
+            id: `evt-${Date.now()}`,
+            name: 'New Event',
+            start: 0,
+            duration: 5,
+            command: ''
+          };
+          // Automatically open editor for the new event
+          setEditingEventInfo({ trackId, event: newEvent });
+          return {
+            ...track,
+            events: [...track.events, newEvent]
+          };
+        }
+        return track;
+      })
+    );
   };
 
   const handleOpenEventEditor = (trackId: string, event: TimelineEvent) => {
@@ -129,6 +149,7 @@ const TimelineEditor = () => {
                 onSkipBack={skipToStart}
                 onSkipForward={skipToEnd}
                 onLiveModeChange={setIsLiveMode}
+                onTotalDurationChange={setTotalDuration}
               />
 
               <Card>
@@ -144,6 +165,7 @@ const TimelineEditor = () => {
                     pixelsPerSecond={pixelsPerSecond}
                     currentTime={currentTime}
                     onEventClick={handleOpenEventEditor}
+                    onAddEvent={handleAddEvent}
                   />
                 </CardContent>
               </Card>

@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, SkipForward, SkipBack } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface PlaybackControlsProps {
   isPlaying: boolean;
@@ -14,6 +16,7 @@ interface PlaybackControlsProps {
   onSkipBack: () => void;
   onSkipForward: () => void;
   onLiveModeChange: (checked: boolean) => void;
+  onTotalDurationChange: (duration: number) => void;
 }
 
 const formatTime = (timeInSeconds: number) => {
@@ -33,6 +36,7 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   onSkipBack,
   onSkipForward,
   onLiveModeChange,
+  onTotalDurationChange,
 }) => {
   return (
     <Card>
@@ -54,18 +58,28 @@ const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             {formatTime(currentTime)} / {formatTime(totalDuration).split('.')[0]}
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <Switch
+        <div className="flex items-center gap-6">
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="show-length">Show Length (s)</Label>
+            <Input
+              id="show-length"
+              type="number"
+              value={totalDuration}
+              onChange={(e) => onTotalDurationChange(Math.max(1, Number(e.target.value)))}
+              className="w-24"
+              min="1"
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Switch
               id="live-mode"
               checked={isLiveMode}
               onCheckedChange={onLiveModeChange}
-          />
-          <label
-              htmlFor="live-mode"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
+            />
+            <Label htmlFor="live-mode">
               Live Mode
-          </label>
+            </Label>
+          </div>
         </div>
       </CardContent>
     </Card>
