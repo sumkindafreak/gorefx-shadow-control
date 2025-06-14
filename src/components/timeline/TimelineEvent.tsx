@@ -23,10 +23,15 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({ event, pixelsPerSecond, t
     id: event.id,
   });
 
-  const style = {
+  const style: React.CSSProperties = {
+    position: 'absolute',
+    top: '50%',
     left: `${event.start * pixelsPerSecond}px`,
     width: `${event.duration * pixelsPerSecond}px`,
-    transform: CSS.Translate.toString(transform),
+    height: '80%',
+    transform: `translateY(-50%) ${transform ? CSS.Translate.toString(transform) : ''}`,
+    zIndex: isDragging ? 20 : 10,
+    touchAction: 'none',
   };
   
   const title = `${event.name} (Start: ${event.start}s, Duration: ${event.duration}s)${event.command ? `\nCommand: ${event.command}`: ''}`;
@@ -35,17 +40,20 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({ event, pixelsPerSecond, t
     <div
       ref={setNodeRef}
       style={style}
-      className={cn(
-        "absolute top-1/2 -translate-y-1/2 h-4/5 rounded-md border text-white flex items-center px-2 transition-colors z-10",
-        isDragging ? 'cursor-grabbing shadow-lg' : 'cursor-grab',
-        eventColorClasses[trackType]
-      )}
-      title={title}
-      onClick={onClick}
       {...attributes}
       {...listeners}
     >
-      <span className="text-xs font-medium truncate pointer-events-none">{event.name}</span>
+      <div
+        className={cn(
+          "w-full h-full rounded-md border text-white flex items-center px-2 transition-colors",
+          isDragging ? 'cursor-grabbing shadow-lg' : 'cursor-grab',
+          eventColorClasses[trackType]
+        )}
+        title={title}
+        onClick={onClick}
+      >
+        <span className="text-xs font-medium truncate pointer-events-none">{event.name}</span>
+      </div>
     </div>
   );
 };
