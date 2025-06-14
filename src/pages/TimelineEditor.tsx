@@ -6,24 +6,29 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Play, Pause, SkipForward, SkipBack, Plus, FolderOpen, Save } from "lucide-react";
+import { ArrowLeft, Play, Pause, SkipForward, SkipBack, Plus, FolderOpen, Save, Lightbulb, AudioLines, Wand2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import TimelineTrack, { Track } from "@/components/timeline/TimelineTrack";
 
 const TimelineEditor = () => {
   const [tracks, setTracks] = useState<Track[]>([]);
 
-  const addTrack = () => {
-    // For now, we only add lighting tracks. We can expand this later.
+  const addTrack = (type: Track['type']) => {
     const newTrack: Track = {
       id: `track-${Date.now()}`,
-      type: 'lighting',
-      name: `New Lighting Track ${tracks.filter(t => t.type === 'lighting').length + 1}`
+      type: type,
+      name: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Track ${tracks.filter(t => t.type === type).length + 1}`
     };
     setTracks(prevTracks => [...prevTracks, newTrack]);
   };
@@ -89,10 +94,28 @@ const TimelineEditor = () => {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Active Timeline: "Untitled Show"</CardTitle>
-                   <Button variant="outline" onClick={addTrack}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Track
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Track
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => addTrack('lighting')}>
+                        <Lightbulb className="mr-2 h-4 w-4" />
+                        <span>Lighting</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => addTrack('audio')}>
+                        <AudioLines className="mr-2 h-4 w-4" />
+                        <span>Audio</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => addTrack('effects')}>
+                        <Wand2 className="mr-2 h-4 w-4" />
+                        <span>Effects</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </CardHeader>
                 <CardContent>
                   {tracks.length > 0 ? (
