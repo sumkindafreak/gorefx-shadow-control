@@ -15,6 +15,7 @@ import {
 import {
   LayoutDashboard, RadioTower, GanttChart, Terminal, Library, Users, Cpu, Projector, AudioLines, Calendar, Siren, History, BarChart, Signal, CloudSun, Camera, HardDrive, Settings, HelpCircle
 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const mainNav = [
   { title: "Dashboard", icon: LayoutDashboard, href: "#" },
@@ -57,24 +58,10 @@ const AppSidebar = () => {
                 </div>
             </SidebarHeader>
             <SidebarContent className="p-0">
-                <SidebarMenu>
-                    {mainNav.map((item) => (
-                        <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton asChild tooltip={item.title}>
-                                <a href={item.href}>
-                                    <item.icon />
-                                    <span>{item.title}</span>
-                                </a>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
-                
-                <SidebarGroup>
-                    <SidebarGroupLabel>Connectivity</SidebarGroupLabel>
-                    <SidebarGroupContent>
+                <ScrollArea className="h-full">
+                    <div className="flex flex-col gap-2 p-2">
                         <SidebarMenu>
-                             {connectivityNav.map((item) => (
+                            {mainNav.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild tooltip={item.title}>
                                         <a href={item.href}>
@@ -85,44 +72,62 @@ const AppSidebar = () => {
                                 </SidebarMenuItem>
                             ))}
                         </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-                
-                <SidebarGroup>
-                    <SidebarGroupLabel>Event Sequencer</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                             {eventSequencerNav.map((item) => (
-                                <SidebarMenuItem key={item.title}>
-                                     <SidebarMenuButton asChild tooltip={item.title}>
-                                        <a href={item.href}>
-                                            <item.icon />
-                                            <span>{item.title}</span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
+                        
+                        <SidebarGroup className="p-0">
+                            <SidebarGroupLabel>Connectivity</SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                     {connectivityNav.map((item) => (
+                                        <SidebarMenuItem key={item.title}>
+                                            <SidebarMenuButton asChild tooltip={item.title}>
+                                                <a href={item.href}>
+                                                    <item.icon />
+                                                    <span>{item.title}</span>
+                                                </a>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                        
+                        <SidebarGroup className="p-0">
+                            <SidebarGroupLabel>Event Sequencer</SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                     {eventSequencerNav.map((item) => (
+                                        <SidebarMenuItem key={item.title}>
+                                             <SidebarMenuButton asChild tooltip={item.title}>
+                                                <a href={item.href}>
+                                                    <item.icon />
+                                                    <span>{item.title}</span>
+                                                </a>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
 
-                <SidebarGroup>
-                    <SidebarGroupLabel>System</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                             {systemNav.map((item) => (
-                                <SidebarMenuItem key={item.title}>
-                                    <SidebarMenuButton asChild tooltip={item.title}>
-                                        <a href={item.href}>
-                                            <item.icon />
-                                            <span>{item.title}</span>
-                                        </a>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            ))}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
+                        <SidebarGroup className="p-0">
+                            <SidebarGroupLabel>System</SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <SidebarMenu>
+                                     {systemNav.map((item) => (
+                                        <SidebarMenuItem key={item.title}>
+                                            <SidebarMenuButton asChild tooltip={item.title}>
+                                                <a href={item.href}>
+                                                    <item.icon />
+                                                    <span>{item.title}</span>
+                                                </a>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+                    </div>
+                </ScrollArea>
             </SidebarContent>
             <SidebarFooter>
                 <SidebarMenu>
