@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert } from "@/integrations/supabase/types";
 
@@ -44,9 +45,9 @@ export const getThreadsForCategory = async (categoryId: string): Promise<ThreadW
     updated_at?: string;
   };
 
-  // The .rpc() call is simplified. The returned `data` is of type `any`.
-  // @ts-ignore - Supabase types are not generated for this RPC, causing a type error.
-  const { data, error } = await supabase
+  // The .rpc() call is simplified. We cast to `any` because Supabase types are not
+  // generated for this RPC, causing a type error.
+  const { data, error } = await (supabase as any)
     .rpc('get_threads_with_reply_count', { category_id_param: categoryId });
 
   if (error) throw error;
