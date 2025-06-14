@@ -73,6 +73,10 @@ export const useWebSocket = () => {
     return websocketService.sendCommand(command);
   }, []);
 
+  const sendRawCommand = useCallback((command: string) => {
+    return websocketService.sendRawCommand(command);
+  }, []);
+
   const requestStatus = useCallback(() => {
     return websocketService.requestStatus();
   }, []);
@@ -85,6 +89,7 @@ export const useWebSocket = () => {
     connect,
     disconnect,
     sendCommand,
+    sendRawCommand,
     requestStatus
   };
 };

@@ -1,6 +1,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Track } from '@/components/timeline/types';
+import { useWebSocket } from './useWebSocket';
 
 interface UseEventTrackerProps {
   tracks: Track[];
@@ -11,6 +12,7 @@ interface UseEventTrackerProps {
 
 export const useEventTracker = ({ tracks, currentTime, isPlaying, isLiveMode }: UseEventTrackerProps) => {
   const activeEventsRef = useRef(new Set<string>());
+  const { sendRawCommand, isConnected } = useWebSocket();
 
   useEffect(() => {
     if (!isLiveMode) {
@@ -37,6 +39,11 @@ export const useEventTracker = ({ tracks, currentTime, isPlaying, isLiveMode }: 
             console.log(`EVENT START: ${event.name} on ${track.type} track "${track.name}"`);
             if (event.command) {
               console.log(`  > CMD: ${event.command}`);
+              if (isConnected) {
+                sendRawCommand(event.command);
+              } else {
+                console.warn('Cannot send command: WebSocket not connected.');
+              }
             }
           }
         }
@@ -53,5 +60,5 @@ export const useEventTracker = ({ tracks, currentTime, isPlaying, isLiveMode }: 
     });
 
     activeEventsRef.current = newlyActive;
-  }, [currentTime, isPlaying, isLiveMode, tracks]);
+  }, [currentTime, isPlaying, isLiveMode, tracks, isConnected, sendRawCommand]);
 };

@@ -104,6 +104,21 @@ class WebSocketService {
     return false;
   }
 
+  sendRawCommand(command: string): boolean {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        type: 'command',
+        command: command,
+        timestamp: new Date().toISOString()
+      });
+      console.log('Sending raw command to ESP32:', message);
+      this.ws.send(message);
+      return true;
+    }
+    console.warn('WebSocket not connected, cannot send raw command');
+    return false;
+  }
+
   requestStatus() {
     return this.sendCommand({
       type: 'system',

@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,6 +22,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { TimelineEvent } from './types';
 import { Textarea } from '@/components/ui/textarea';
+import { isValidCommand } from '@/lib/commands';
 
 interface EventEditorProps {
   eventInfo: { trackId: string; event: TimelineEvent } | null;
@@ -35,7 +35,12 @@ const formSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
   start: z.coerce.number().min(0, 'Start time must be non-negative.'),
   duration: z.coerce.number().min(0.1, 'Duration must be at least 0.1s.'),
-  command: z.string().optional(),
+  command: z.string().optional().refine(
+    (cmd) => !cmd || isValidCommand(cmd),
+    {
+      message: "Invalid command format or value. Please check the command reference."
+    }
+  ),
 });
 
 const EventEditor: React.FC<EventEditorProps> = ({ eventInfo, isOpen, onClose, onSave }) => {
@@ -120,7 +125,7 @@ const EventEditor: React.FC<EventEditorProps> = ({ eventInfo, isOpen, onClose, o
                   <FormLabel>Command Line</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="e.g. LIGHTS_ON, PLAY_SOUND --file siren.mp3"
+                      placeholder="e.g. FIRE_ON, FOG:128, PLAY_AUDIO:1"
                       {...field}
                       value={field.value ?? ''}
                     />
