@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert } from "@/integrations/supabase/types";
 
@@ -8,8 +7,6 @@ export type ThreadWithAuthor = Tables<'forum_threads'> & {
 
 export type ThreadWithAuthorAndReplies = ThreadWithAuthor & {
   reply_count: number;
-  author_full_name: string | null;
-  author_avatar_url: string | null;
 }
 
 export type ReplyWithAuthor = Tables<'forum_replies'> & {
@@ -76,8 +73,6 @@ export const getThreadsForCategory = async (categoryId: string): Promise<ThreadW
 
     // Properties from ThreadWithAuthorAndReplies
     reply_count: thread.reply_count,
-    author_full_name: thread.author_full_name,
-    author_avatar_url: thread.author_avatar_url,
   }));
 };
 

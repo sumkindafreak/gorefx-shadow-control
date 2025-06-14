@@ -1,4 +1,3 @@
-
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getThreadsForCategory, getCategory } from "@/lib/forumApi";
@@ -74,7 +73,7 @@ const ForumCategory = () => {
                             <TableRow key={thread.id}>
                               <TableCell>
                                 <Link to={`/forum/thread/${thread.id}`} className="font-semibold hover:underline">{thread.title}</Link>
-                                <p className="text-sm text-muted-foreground">by {thread.author_full_name || 'Anonymous'}</p>
+                                <p className="text-sm text-muted-foreground">by {thread.profiles?.full_name || 'Anonymous'}</p>
                               </TableCell>
                               <TableCell className="text-center">
                                 <div className="flex items-center justify-center gap-1">
