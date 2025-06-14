@@ -6,12 +6,15 @@ import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import PayPalButton from "@/components/PayPalButton";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Community = () => {
   const [scriptLoaded, setScriptLoaded] = useState(false);
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
 
   const tiers = [
     {
@@ -120,11 +123,19 @@ const Community = () => {
                                 ))}
                             </ul>
                             <div className="mt-auto">
-                               {scriptLoaded ? (
-                                <PayPalButton planId={tier.planId} />
-                            ) : (
+                               {authLoading ? (
+                                  <Button className="w-full" disabled>Loading...</Button>
+                               ) : scriptLoaded ? (
+                                user ? (
+                                  <PayPalButton planId={tier.planId} />
+                                ) : (
+                                  <Button className="w-full" onClick={() => navigate('/auth')}>
+                                    Subscribe
+                                  </Button>
+                                )
+                              ) : (
                                 <Button className="w-full" disabled>Loading Payment Options...</Button>
-                            )}
+                              )}
                             </div>
                         </CardContent>
                     </Card>

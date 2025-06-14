@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,8 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { AuthProvider } from "./contexts/AuthContext";
 
 // Import all newly added pages
+import Auth from "./pages/Auth";
 import LiveControls from "./pages/LiveControls";
 import TimelineEditor from "./pages/TimelineEditor";
 import CustomCommands from "./pages/CustomCommands";
@@ -32,44 +33,47 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
 
-          {/* Main nav */}
-          <Route path="/live-controls" element={<LiveControls />} />
-          <Route path="/timeline-editor" element={<TimelineEditor />} />
-          <Route path="/custom-commands" element={<CustomCommands />} />
-          <Route path="/show-library" element={<ShowLibrary />} />
-          <Route path="/community" element={<Community />} />
+            {/* Main nav */}
+            <Route path="/live-controls" element={<LiveControls />} />
+            <Route path="/timeline-editor" element={<TimelineEditor />} />
+            <Route path="/custom-commands" element={<CustomCommands />} />
+            <Route path="/show-library" element={<ShowLibrary />} />
+            <Route path="/community" element={<Community />} />
 
-          {/* Connectivity */}
-          <Route path="/devices" element={<Devices />} />
-          <Route path="/dmx" element={<DMX />} />
-          <Route path="/audio-sync" element={<AudioSync />} />
+            {/* Connectivity */}
+            <Route path="/devices" element={<Devices />} />
+            <Route path="/dmx" element={<DMX />} />
+            <Route path="/audio-sync" element={<AudioSync />} />
 
-          {/* Event Sequencer */}
-          <Route path="/show-schedule" element={<ShowSchedule />} />
-          <Route path="/emergency" element={<Emergency />} />
-          <Route path="/event-logs" element={<EventLogs />} />
+            {/* Event Sequencer */}
+            <Route path="/show-schedule" element={<ShowSchedule />} />
+            <Route path="/emergency" element={<Emergency />} />
+            <Route path="/event-logs" element={<EventLogs />} />
 
-          {/* System */}
-          <Route path="/analysis" element={<Analysis />} />
-          <Route path="/remote-access" element={<RemoteAccess />} />
-          <Route path="/weather" element={<Weather />} />
-          <Route path="/webcam" element={<Webcam />} />
-          <Route path="/firmware" element={<Firmware />} />
+            {/* System */}
+            <Route path="/analysis" element={<Analysis />} />
+            <Route path="/remote-access" element={<RemoteAccess />} />
+            <Route path="/weather" element={<Weather />} />
+            <Route path="/webcam" element={<Webcam />} />
+            <Route path="/firmware" element={<Firmware />} />
 
-          {/* Footer/options */}
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/help" element={<Help />} />
+            {/* Footer/options */}
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/help" element={<Help />} />
 
-          {/* Catch-all */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+            {/* Catch-all */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
