@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert } from "@/integrations/supabase/types";
 
@@ -28,17 +27,25 @@ export const getCategory = async (id: string) => {
     return data;
 };
 
-// Fix: Improved type safety and ordering in RPC result.
+// Fix: Explicitly type the data for TypeScript!
 export const getThreadsForCategory = async (categoryId: string): Promise<ThreadWithAuthorAndReplies[]> => {
-    // Get result via RPC, then sort if necessary in JS for consistent TS.
+    type RpcThread = {
+      id: string;
+      created_at: string;
+      title: string;
+      user_id: string;
+      author_full_name: string | null;
+      author_avatar_url: string | null;
+      reply_count: number;
+      // Add any new fields returned by the RPC here
+    };
     const { data, error } = await supabase
-      .rpc('get_threads_with_reply_count', { category_id_param: categoryId });
+      .rpc<RpcThread>('get_threads_with_reply_count', { category_id_param: categoryId });
 
     if (error) throw error;
     if (!data) return [];
 
-    // The RPC already sorts by created_at DESC (see SQL), so just map fields.
-    return data.map((thread: any) => ({
+    return (data as RpcThread[]).map((thread) => ({
       ...thread,
       profiles: {
         full_name: thread.author_full_name,
