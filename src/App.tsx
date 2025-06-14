@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,6 +28,9 @@ import Webcam from "./pages/Webcam";
 import Firmware from "./pages/Firmware";
 import Settings from "./pages/Settings";
 import Help from "./pages/Help";
+import Forum from "./pages/Forum";
+import ForumCategory from "./pages/ForumCategory";
+import ForumThread from "./pages/ForumThread";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +51,9 @@ const App = () => (
             <Route path="/custom-commands" element={<CustomCommands />} />
             <Route path="/show-library" element={<ShowLibrary />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/forum" element={<Forum />} />
+            <Route path="/forum/category/:categoryId" element={<ForumCategory />} />
+            <Route path="/forum/thread/:threadId" element={<ForumThread />} />
 
             {/* Connectivity */}
             <Route path="/devices" element={<Devices />} />
