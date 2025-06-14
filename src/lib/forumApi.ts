@@ -28,14 +28,14 @@ export const getCategory = async (id: string) => {
     return data;
 };
 
+// Fix: type the result of RPC as any[] to allow .map().
 export const getThreadsForCategory = async (categoryId: string): Promise<ThreadWithAuthorAndReplies[]> => {
     const { data, error } = await supabase
-      .rpc('get_threads_with_reply_count', { category_id_param: categoryId });
+      .rpc('get_threads_with_reply_count', { category_id_param: categoryId }) as { data: any[], error: any };
 
     if (error) throw error;
-    
     if (!data) return [];
-    
+
     // The rpc function will return threads with profiles and reply_count
     return data.map((thread: any) => ({
       ...thread,
