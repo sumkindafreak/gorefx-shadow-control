@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -18,6 +19,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+        orbitron: ['Orbitron', 'sans-serif'],
+        spectral: ['"Spectral SC"', 'serif'],
+      },
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -84,11 +89,16 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+        'static-flicker': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.9' },
+        }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+        'static-flicker': 'static-flicker 0.1s linear infinite',
 			}
 		}
 	},
