@@ -10,11 +10,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import PayPalButton from "@/components/PayPalButton";
 import { useAuth } from "@/contexts/AuthContext";
+import { Badge } from "@/components/ui/badge";
 
 const Community = () => {
   const [scriptLoaded, setScriptLoaded] = useState(false);
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, subscription } = useAuth();
   const navigate = useNavigate();
+
+  const tierNameMap: { [key: string]: string } = {
+    'standard': 'Standard Access',
+    'creator': 'Creator Access',
+    'full_access': 'Full Access',
+  };
 
   const tiers = [
     {
@@ -98,16 +105,27 @@ const Community = () => {
             <main className="flex-1 space-y-6">
               <div className="text-center">
                 <h1 className="text-4xl font-bold font-spectral">Join the HauntSync Community</h1>
-                <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-                  Unlock powerful features by subscribing. Share your creations, get inspired by others, and take your haunt to the next level.
-                </p>
+                {subscription ? (
+                  <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
+                    You are currently on the <span className="text-primary font-bold">{tierNameMap[subscription.tier]}</span> plan. Welcome to the community!
+                  </p>
+                ) : (
+                  <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
+                    Unlock powerful features by subscribing. Share your creations, get inspired by others, and take your haunt to the next level.
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-8 max-w-5xl mx-auto">
-                {tiers.map((tier) => (
-                    <Card key={tier.name} className="flex flex-col hover:border-primary transition-all">
+                {tiers.map((tier) => {
+                  const isCurrentPlan = subscription && tierNameMap[subscription.tier] === tier.name;
+                  return (
+                    <Card key={tier.name} className={`flex flex-col hover:border-primary transition-all ${isCurrentPlan ? 'border-primary ring-2 ring-primary' : ''}`}>
                         <CardHeader>
-                            <CardTitle className="font-spectral text-2xl">{tier.name}</CardTitle>
+                            <div className="flex justify-between items-center">
+                              <CardTitle className="font-spectral text-2xl">{tier.name}</CardTitle>
+                              {isCurrentPlan && <Badge variant="secondary">Current Plan</Badge>}
+                            </div>
                             <div className="text-4xl font-bold">
                                 {tier.price}
                                 <span className="text-base font-normal text-muted-foreground">{tier.period}</span>
@@ -125,6 +143,8 @@ const Community = () => {
                             <div className="mt-auto">
                                {authLoading ? (
                                   <Button className="w-full" disabled>Loading...</Button>
+                               ) : isCurrentPlan ? (
+                                <Button className="w-full" disabled>You're Subscribed</Button>
                                ) : scriptLoaded ? (
                                 user ? (
                                   <PayPalButton planId={tier.planId} />
@@ -139,7 +159,8 @@ const Community = () => {
                             </div>
                         </CardContent>
                     </Card>
-                ))}
+                  );
+                })}
               </div>
               
               <div className="text-center text-sm text-muted-foreground pt-4">

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Wifi, BatteryFull, Clock, WifiOff, BatteryLow, LogIn, LogOut } from 'lucide-react';
+import { Wifi, BatteryFull, Clock, WifiOff, BatteryLow, LogIn, LogOut, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,7 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 const Header = () => {
     const [time, setTime] = useState(new Date());
     const { isConnected, deviceStatus } = useWebSocket();
-    const { user, profile, signOut, loading } = useAuth();
+    const { user, profile, signOut, loading, subscription } = useAuth();
 
     useEffect(() => {
         const timerId = setInterval(() => setTime(new Date()), 1000);
@@ -42,6 +42,12 @@ const Header = () => {
         if (!name) return 'U';
         return name.split(' ').map(n => n[0]).join('').toUpperCase();
     }
+
+    const tierNameMap: { [key: string]: string } = {
+        standard: 'Standard',
+        creator: 'Creator',
+        full_access: 'Full Access'
+    };
 
     return (
         <header className="flex h-14 shrink-0 items-center gap-4 border-b bg-card/20 px-4 lg:h-[60px] lg:px-6">
@@ -87,6 +93,15 @@ const Header = () => {
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
+                            {subscription && (
+                              <>
+                                <DropdownMenuItem disabled>
+                                    <Crown className="mr-2 h-4 w-4 text-yellow-500" />
+                                    <span>{tierNameMap[subscription.tier]} Plan</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                              </>
+                            )}
                             <DropdownMenuItem onClick={signOut}>
                                 <LogOut className="mr-2 h-4 w-4" />
                                 <span>Log out</span>

@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Tables } from '@/integrations/supabase/types';
 
 interface Profile {
   id: string;
@@ -9,10 +10,13 @@ interface Profile {
   avatar_url?: string;
 }
 
+type Subscription = Tables<'subscriptions'>;
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
+  subscription: Subscription | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -23,6 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,38 +51,60 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchUserStuff = async () => {
       if (user) {
         setLoading(true);
-        const { data, error } = await supabase
+        const profilePromise = supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .single();
         
-        if (error && error.code !== 'PGRST116') { // Ignore error for no rows found
-          console.error('Error fetching profile:', error);
+        const subscriptionPromise = supabase
+          .from('subscriptions')
+          .select('*')
+          .in('status', ['active', 'trialing'])
+          .eq('user_id', user.id)
+          .single();
+
+        const [
+          { data: profileData, error: profileError }, 
+          { data: subscriptionData, error: subscriptionError }
+        ] = await Promise.all([profilePromise, subscriptionPromise]);
+        
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error fetching profile:', profileError);
         } else {
-          setProfile(data);
+          setProfile(profileData);
         }
+
+        if (subscriptionError && subscriptionError.code !== 'PGRST116') {
+          console.error('Error fetching subscription:', subscriptionError);
+        } else {
+          setSubscription(subscriptionData);
+        }
+
         setLoading(false);
       } else {
         setProfile(null);
+        setSubscription(null);
       }
     };
 
-    fetchProfile();
+    fetchUserStuff();
   }, [user]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
+    setSubscription(null);
   };
 
   const value = {
     user,
     session,
     profile,
+    subscription,
     loading,
     signOut,
   };
