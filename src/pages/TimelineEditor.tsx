@@ -54,26 +54,15 @@ const TimelineEditor = () => {
   };
 
   const handleAddEvent = (trackId: string) => {
-    updateTracks(prevTracks =>
-      prevTracks.map(track => {
-        if (track.id === trackId) {
-          const newEvent: TimelineEvent = {
-            id: `evt-${Date.now()}`,
-            name: 'New Event',
-            start: 0,
-            duration: 5,
-            command: ''
-          };
-          // Automatically open editor for the new event
-          setEditingEventInfo({ trackId, event: newEvent });
-          return {
-            ...track,
-            events: [...track.events, newEvent]
-          };
-        }
-        return track;
-      })
-    );
+    const newEvent: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      name: 'New Event',
+      start: 0,
+      duration: 5,
+      command: ''
+    };
+    // Automatically open editor for the new event, without adding it to the state yet.
+    setEditingEventInfo({ trackId, event: newEvent });
   };
 
   const handleOpenEventEditor = (trackId: string, event: TimelineEvent) => {
@@ -84,16 +73,27 @@ const TimelineEditor = () => {
     setEditingEventInfo(null);
   };
   
-  const handleSaveEvent = (trackId: string, updatedEvent: TimelineEvent) => {
+  const handleSaveEvent = (trackId: string, eventToSave: TimelineEvent) => {
     updateTracks(prevTracks => 
       prevTracks.map(track => {
         if (track.id === trackId) {
-          return {
-            ...track,
-            events: track.events.map(event => 
-              event.id === updatedEvent.id ? updatedEvent : event
-            ),
-          };
+          const eventExists = track.events.some(e => e.id === eventToSave.id);
+
+          if (eventExists) {
+            // Update existing event
+            return {
+              ...track,
+              events: track.events.map(event => 
+                event.id === eventToSave.id ? eventToSave : event
+              ),
+            };
+          } else {
+            // Add new event
+            return {
+              ...track,
+              events: [...track.events, eventToSave],
+            };
+          }
         }
         return track;
       })
