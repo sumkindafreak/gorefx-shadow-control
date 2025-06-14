@@ -1,10 +1,10 @@
-
 export interface DeviceStatus {
   connected: boolean;
   ip?: string;
   uptime?: number;
   freeHeap?: number;
   wifiStrength?: number;
+  battery?: number;
 }
 
 export interface DeviceCommand {

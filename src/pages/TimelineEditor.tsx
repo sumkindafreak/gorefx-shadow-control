@@ -1,12 +1,10 @@
-
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/AppSidebar";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Play, Pause, SkipForward, SkipBack, Plus } from "lucide-react";
+import { ArrowLeft, Play, Pause, SkipForward, SkipBack, Plus, FolderOpen, Save } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const TimelineEditor = () => {
@@ -29,10 +27,16 @@ const TimelineEditor = () => {
             <main className="flex-1 space-y-6">
               <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold font-spectral">Timeline Editor</h1>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Timeline
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline">
+                    <FolderOpen className="w-4 h-4 mr-2" />
+                    Load Show
+                  </Button>
+                  <Button>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Show
+                  </Button>
+                </div>
               </div>
 
               {/* Playback Controls */}
@@ -63,45 +67,17 @@ const TimelineEditor = () => {
 
               {/* Timeline View */}
               <Card>
-                <CardHeader>
-                  <CardTitle>Active Timeline: "Halloween Night Show"</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>Active Timeline: "Untitled Show"</CardTitle>
+                   <Button variant="outline">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Track
+                  </Button>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="bg-muted p-4 rounded">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-semibold">Audio Track</span>
-                        <Badge variant="secondary">5:30</Badge>
-                      </div>
-                      <div className="h-8 bg-blue-500/20 rounded relative">
-                        <div className="absolute left-2 top-1 text-xs">Spooky_Ambience.mp3</div>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-muted p-4 rounded">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-semibold">Lighting Effects</span>
-                        <Badge variant="secondary">Multiple</Badge>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="h-6 bg-yellow-500/20 rounded relative">
-                          <div className="absolute left-2 top-0.5 text-xs">Front Strobes</div>
-                        </div>
-                        <div className="h-6 bg-red-500/20 rounded relative">
-                          <div className="absolute left-2 top-0.5 text-xs">Red Wash</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-muted p-4 rounded">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-semibold">Special Effects</span>
-                        <Badge variant="secondary">3 Events</Badge>
-                      </div>
-                      <div className="h-6 bg-green-500/20 rounded relative">
-                        <div className="absolute left-2 top-0.5 text-xs">Fog + Jump Scare</div>
-                      </div>
-                    </div>
+                  <div className="space-y-4 text-center text-muted-foreground py-16 border-2 border-dashed rounded-lg">
+                    <p className="font-semibold">This timeline is empty.</p>
+                    <p className="text-sm">Click "Add Track" to add audio, lighting, and effects.</p>
                   </div>
                 </CardContent>
               </Card>

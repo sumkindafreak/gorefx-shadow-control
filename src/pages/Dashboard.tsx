@@ -6,23 +6,19 @@ import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Cpu,
-  Layers,
   Wifi,
-  RefreshCcw,
-  AlertTriangle,
-  Users,
-  Calendar,
-  Radio,
-  Play,
   History,
   WifiOff,
+  Clock,
+  Gauge,
+  Radio,
+  Battery,
 } from "lucide-react";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import WebSocketConnection from "@/components/WebSocketConnection";
 
 const Dashboard = () => {
-  const { isConnected, deviceStatus } = useWebSocket();
+  const { isConnected, deviceStatus, lastMessage } = useWebSocket();
 
   const statCards = [
     {
@@ -33,67 +29,35 @@ const Dashboard = () => {
       color: isConnected ? "bg-green-600/10 text-green-700" : "bg-red-600/10 text-red-700",
     },
     {
-      label: "Active Shows",
-      value: 2,
-      icon: Play,
-      badge: "Running",
+      label: "Device Uptime",
+      value: isConnected && deviceStatus.uptime ? `${Math.floor(deviceStatus.uptime / 1000)}s` : "N/A",
+      icon: Clock,
+      badge: "Seconds",
       color: "bg-blue-600/10 text-blue-700",
     },
     {
-      label: "Total Users",
-      value: 3,
-      icon: Users,
-      badge: "Admins",
+      label: "Free Heap",
+      value: isConnected && deviceStatus.freeHeap ? `${deviceStatus.freeHeap} B` : "N/A",
+      icon: Gauge,
+      badge: "Memory",
       color: "bg-orange-600/10 text-orange-700",
     },
     {
-      label: "Next Scheduled",
-      value: "7:30pm",
-      icon: Calendar,
-      badge: "Show Time",
-      color: "bg-rose-600/10 text-rose-700",
-    },
-  ];
-
-  const recentEvents = [
-    {
-      icon: isConnected ? Wifi : WifiOff,
-      title: isConnected ? "ESP32 Connected" : "ESP32 Disconnected",
-      desc: isConnected ? `Connected to ${deviceStatus.ip || 'ESP32'}` : "WebSocket connection lost",
-      time: "now",
-    },
-    {
-      icon: RefreshCcw,
-      title: "System Restarted",
-      desc: "Scheduled restart at 2:30 PM",
-      time: "2m ago",
-    },
-    {
-      icon: Layers,
-      title: "Show 'Twilight Parade' Started",
-      desc: "Show triggered by schedule",
-      time: "18m ago",
-    },
-    {
-      icon: Cpu,
-      title: "Device Connected",
-      desc: "Arduino Mega2560 - 'Haunt FrontLight'",
-      time: "35m ago",
-    },
-    {
+      label: "WiFi Strength",
+      value: isConnected && deviceStatus.wifiStrength ? `${deviceStatus.wifiStrength} dBm` : "N/A",
       icon: Radio,
-      title: "DMX Broadcast Sent",
-      desc: "Scene set to 'Full Lights'",
-      time: "1h ago",
+      badge: "Signal",
+      color: "bg-rose-600/10 text-rose-700",
     },
   ];
 
   const systemStatus = {
     online: isConnected,
+    ip: deviceStatus.ip || "Unknown",
     uptime: deviceStatus.uptime ? `${Math.floor(deviceStatus.uptime / 1000)}s` : "Unknown",
-    dmxStatus: isConnected ? "Active" : "Offline",
-    audio: isConnected ? "Synced" : "Offline",
-    firmware: "Up to date",
+    freeHeap: deviceStatus.freeHeap ? `${deviceStatus.freeHeap} bytes` : "Unknown",
+    wifiStrength: deviceStatus.wifiStrength ? `${deviceStatus.wifiStrength} dBm` : "Unknown",
+    battery: deviceStatus.battery ? `${deviceStatus.battery}%` : "Unknown",
   };
 
   return (
@@ -141,21 +105,25 @@ const Dashboard = () => {
                         {systemStatus.online ? "ONLINE" : "OFFLINE"}
                       </span>
                     </div>
+                     <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">IP Address</span>
+                      <span className="text-foreground">{systemStatus.ip}</span>
+                    </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">Device Uptime</span>
                       <span className="text-foreground">{systemStatus.uptime}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">DMX</span>
-                      <span className="text-foreground">{systemStatus.dmxStatus}</span>
+                      <span className="text-sm text-muted-foreground">Free Heap</span>
+                      <span className="text-foreground">{systemStatus.freeHeap}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Audio Sync</span>
-                      <span className="text-foreground">{systemStatus.audio}</span>
+                      <span className="text-sm text-muted-foreground">WiFi Strength</span>
+                      <span className="text-foreground">{systemStatus.wifiStrength}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Firmware</span>
-                      <span className="text-foreground">{systemStatus.firmware}</span>
+                      <span className="text-sm text-muted-foreground">Battery</span>
+                      <span className="text-foreground">{systemStatus.battery}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -165,22 +133,19 @@ const Dashboard = () => {
                   <CardHeader>
                     <CardTitle className="font-spectral text-xl flex gap-2 items-center">
                       <History className="text-accent" size={20} />
-                      Recent Events
+                      Last Message Received
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <ul className="divide-y divide-border">
-                      {recentEvents.map((evt, idx) => (
-                        <li key={evt.title + idx} className="flex items-center py-3 gap-3 animate-fade-in">
-                          <evt.icon className="w-7 h-7 text-primary/80 shrink-0" />
-                          <div className="flex-1">
-                            <div className="font-semibold">{evt.title}</div>
-                            <div className="text-xs text-muted-foreground">{evt.desc}</div>
-                          </div>
-                          <div className="text-xs text-primary/70 font-mono">{evt.time}</div>
-                        </li>
-                      ))}
-                    </ul>
+                    {lastMessage ? (
+                      <pre className="text-xs bg-muted p-4 rounded overflow-auto max-h-60 font-mono">
+                        {JSON.stringify(lastMessage, null, 2)}
+                      </pre>
+                    ) : (
+                       <div className="text-center text-muted-foreground py-8">
+                        No messages received from device yet.
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

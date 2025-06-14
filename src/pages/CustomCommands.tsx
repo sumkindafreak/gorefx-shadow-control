@@ -12,11 +12,7 @@ import { ArrowLeft, Code, Play, Edit, Trash2, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const CustomCommands = () => {
-  const commands = [
-    { name: "Thunder Storm", code: "lights.strobe(5); audio.play('thunder.mp3'); fog.activate(10);", status: "Active" },
-    { name: "Gentle Wind", code: "audio.play('wind.mp3'); lights.dim(20);", status: "Active" },
-    { name: "Jump Scare", code: "audio.play('scream.mp3'); lights.flash(); pneumatic.trigger();", status: "Inactive" },
-  ];
+  const commands: {name: string, code: string, status: string}[] = [];
 
   return (
     <SidebarProvider>
@@ -53,7 +49,7 @@ const CustomCommands = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {commands.map((cmd, idx) => (
+                    {commands.length > 0 ? commands.map((cmd, idx) => (
                       <div key={idx} className="border rounded p-4 space-y-2">
                         <div className="flex items-center justify-between">
                           <h4 className="font-semibold">{cmd.name}</h4>
@@ -79,7 +75,12 @@ const CustomCommands = () => {
                           </Button>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="text-center text-muted-foreground py-16 border-dashed border-2 rounded-lg">
+                        <p className="font-semibold">No commands saved yet.</p>
+                        <p className="text-sm mt-1">Use the editor on the right to create your first command.</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 

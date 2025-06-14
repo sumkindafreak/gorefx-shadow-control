@@ -5,44 +5,76 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowLeft, MessageCircle, ThumbsUp, Download, Star } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import PayPalButton from "@/components/PayPalButton";
 
 const Community = () => {
-  const posts = [
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+
+  const tiers = [
     {
-      user: "SpookyMaster", 
-      title: "New Fog Machine Integration Tutorial",
-      content: "Just finished setting up my new fog machine with GoreFX. Here's a step-by-step guide...",
-      likes: 24,
-      comments: 8,
-      time: "2 hours ago"
+      name: "Standard Access",
+      price: "£2.50",
+      period: "/ month",
+      planId: "P-7KL264841W2552459NBF443Q",
+      features: [
+        "Access to HauntSync Community",
+        "Comment on posts",
+        "Basic support",
+      ],
+      cta: "Subscribe",
     },
     {
-      user: "HauntedHouse2024", 
-      title: "Amazing Results with Synchronized Audio!",
-      content: "The audio sync feature is incredible! My visitors were completely immersed...",
-      likes: 42,
-      comments: 15,
-      time: "1 day ago"
+      name: "Creator Access",
+      price: "£20",
+      period: "/ month",
+      planId: "P-0SA67033PS444644SNBF45XY",
+      features: [
+        "Everything in Standard",
+        "Download community shows",
+        "Upload your own shows",
+        "Priority support",
+      ],
+      cta: "Subscribe",
     },
     {
-      user: "TechWizard", 
-      title: "Custom Arduino Code for Motion Sensors",
-      content: "Sharing my custom code for integrating PIR motion sensors with the platform...",
-      likes: 67,
-      comments: 23,
-      time: "3 days ago"
-    }
+      name: "Full Access",
+      price: "£50",
+      period: "/ month",
+      planId: "P-9WS58098DC2037313NBF46FY",
+      features: [
+        "Everything in Creator",
+        "Full access to entire HauntSync library",
+        "Early access to new features",
+        "Direct line to developers",
+      ],
+      cta: "Subscribe",
+    },
   ];
 
-  const featuredShows = [
-    { name: "Zombie Apocalypse", author: "UndeadFX", rating: 4.9, downloads: 5200 },
-    { name: "Ghostly Manor", author: "SpiritMaster", rating: 4.7, downloads: 3800 },
-    { name: "Vampire's Lair", author: "BloodMoon", rating: 4.8, downloads: 4100 }
-  ];
+  useEffect(() => {
+    const scriptId = 'paypal-sdk';
+    if (document.getElementById(scriptId) || window.paypal) {
+        setScriptLoaded(true);
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.id = scriptId;
+    script.src = "https://www.paypal.com/sdk/js?client-id=AVJL9UUFTk4WuZ_sx7LaIZ8CWyo-3LNdl-r_Xq4IWrvayg262E2BisO2vm3GnraHRtm9u-Ybh2B0CwMe&vault=true&intent=subscription";
+    script.setAttribute('data-sdk-integration-source', 'button-factory');
+    
+    script.onload = () => {
+      setScriptLoaded(true);
+    };
+    script.onerror = () => {
+        console.error("PayPal SDK could not be loaded.");
+    };
+    document.body.appendChild(script);
+
+  }, []);
 
   return (
     <SidebarProvider>
@@ -61,93 +93,48 @@ const Community = () => {
             </div>
             
             <main className="flex-1 space-y-6">
-              <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold font-spectral">HauntSync Community</h1>
-                <Button>Share Your Setup</Button>
+              <div className="text-center">
+                <h1 className="text-4xl font-bold font-spectral">Join the HauntSync Community</h1>
+                <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
+                  Unlock powerful features by subscribing. Share your creations, get inspired by others, and take your haunt to the next level.
+                </p>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Community Posts */}
-                <div className="lg:col-span-2 space-y-4">
-                  <h2 className="text-xl font-semibold">Recent Posts</h2>
-                  {posts.map((post, idx) => (
-                    <Card key={idx}>
-                      <CardHeader>
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarFallback>{post.user[0]}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="font-semibold">{post.title}</h3>
-                            <p className="text-sm text-muted-foreground">by {post.user} • {post.time}</p>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm mb-4">{post.content}</p>
-                        <div className="flex items-center gap-4">
-                          <Button variant="ghost" size="sm">
-                            <ThumbsUp className="w-4 h-4 mr-1" />
-                            {post.likes}
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <MessageCircle className="w-4 h-4 mr-1" />
-                            {post.comments}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                {/* Sidebar */}
-                <div className="space-y-6">
-                  {/* Featured Shows */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Featured Community Shows</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {featuredShows.map((show, idx) => (
-                        <div key={idx} className="border rounded p-3">
-                          <h4 className="font-semibold">{show.name}</h4>
-                          <p className="text-sm text-muted-foreground">by {show.author}</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <div className="flex items-center gap-1">
-                              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                              <span className="text-sm">{show.rating}</span>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-8 max-w-5xl mx-auto">
+                {tiers.map((tier) => (
+                    <Card key={tier.name} className="flex flex-col hover:border-primary transition-all">
+                        <CardHeader>
+                            <CardTitle className="font-spectral text-2xl">{tier.name}</CardTitle>
+                            <div className="text-4xl font-bold">
+                                {tier.price}
+                                <span className="text-base font-normal text-muted-foreground">{tier.period}</span>
                             </div>
-                            <Badge variant="secondary" className="text-xs">
-                              <Download className="w-3 h-3 mr-1" />
-                              {show.downloads}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-
-                  {/* Community Stats */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Community Stats</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex justify-between">
-                        <span>Active Members</span>
-                        <span className="font-semibold">12,450</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Shows Shared</span>
-                        <span className="font-semibold">3,280</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Total Downloads</span>
-                        <span className="font-semibold">89,500</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                        </CardHeader>
+                        <CardContent className="flex-grow flex flex-col justify-between">
+                            <ul className="space-y-3 text-sm mb-8">
+                                {tier.features.map(feature => (
+                                    <li key={feature} className="flex items-start gap-3">
+                                        <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                                        <span>{feature}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className="mt-auto">
+                               {scriptLoaded ? (
+                                <PayPalButton planId={tier.planId} />
+                            ) : (
+                                <Button className="w-full" disabled>Loading Payment Options...</Button>
+                            )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+              </div>
+              
+              <div className="text-center text-sm text-muted-foreground pt-4">
+                You can manage or cancel your subscription at any time.
+                <br />
+                A HauntSync account is required to subscribe.
               </div>
             </main>
           </SidebarInset>
