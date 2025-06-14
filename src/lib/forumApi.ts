@@ -27,31 +27,44 @@ export const getCategory = async (id: string) => {
     return data;
 };
 
-// Fix: Explicitly type the data for TypeScript!
+// Fix: Correct typing and ensure required fields for ThreadWithAuthorAndReplies
 export const getThreadsForCategory = async (categoryId: string): Promise<ThreadWithAuthorAndReplies[]> => {
-    type RpcThread = {
-      id: string;
-      created_at: string;
-      title: string;
-      user_id: string;
-      author_full_name: string | null;
-      author_avatar_url: string | null;
-      reply_count: number;
-      // Add any new fields returned by the RPC here
-    };
-    const { data, error } = await supabase
-      .rpc<RpcThread>('get_threads_with_reply_count', { category_id_param: categoryId });
+  type RpcArgs = { category_id_param: string };
+  type RpcThread = {
+    id: string;
+    created_at: string;
+    title: string;
+    user_id: string;
+    author_full_name: string | null;
+    author_avatar_url: string | null;
+    reply_count: number;
+    // The following are required by ThreadWithAuthor
+    category_id: string;
+    content: string;
+    updated_at: string;
+  };
 
-    if (error) throw error;
-    if (!data) return [];
+  const { data, error } = await supabase
+    .rpc<RpcArgs, RpcThread>('get_threads_with_reply_count', { category_id_param: categoryId });
 
-    return (data as RpcThread[]).map((thread) => ({
-      ...thread,
-      profiles: {
-        full_name: thread.author_full_name,
-        avatar_url: thread.author_avatar_url,
-      }
-    }));
+  if (error) throw error;
+  if (!data) return [];
+
+  // If category_id, content, updated_at are not returned by the RPC, we set dummy values to comply with the type
+  return data.map((thread) => ({
+    ...thread,
+    profiles: {
+      full_name: thread.author_full_name,
+      avatar_url: thread.author_avatar_url,
+    },
+    author_full_name: thread.author_full_name,
+    author_avatar_url: thread.author_avatar_url,
+    reply_count: thread.reply_count,
+    // Add fallback for required fields if missing from RPC (can be removed if present)
+    category_id: thread.category_id ?? categoryId,
+    content: thread.content ?? "",
+    updated_at: thread.updated_at ?? thread.created_at,
+  }));
 };
 
 export const getThreadWithReplies = async (threadId: string) => {
