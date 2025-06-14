@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/AppSidebar";
@@ -22,6 +23,7 @@ import { Track } from "@/components/timeline/types";
 import TimelineTrack from "@/components/timeline/TimelineTrack";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
+import Playhead from "@/components/timeline/Playhead";
 
 const TimelineEditor = () => {
   const [tracks, setTracks] = useState<Track[]>([]);
