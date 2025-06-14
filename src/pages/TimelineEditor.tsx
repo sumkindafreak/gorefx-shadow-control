@@ -1,3 +1,4 @@
+
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/AppSidebar";
 import Header from "@/components/layout/Header";
@@ -6,6 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play, Pause, SkipForward, SkipBack, Plus, FolderOpen, Save } from "lucide-react";
 import { Link } from "react-router-dom";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 
 const TimelineEditor = () => {
   return (
@@ -75,10 +81,22 @@ const TimelineEditor = () => {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4 text-center text-muted-foreground py-16 border-2 border-dashed rounded-lg">
-                    <p className="font-semibold">This timeline is empty.</p>
-                    <p className="text-sm">Click "Add Track" to add audio, lighting, and effects.</p>
-                  </div>
+                  <ResizablePanelGroup
+                    direction="vertical"
+                    className="min-h-[400px] rounded-lg border"
+                  >
+                    <ResizablePanel defaultSize={50}>
+                      <div className="flex h-full items-center justify-center p-6">
+                        <span className="font-semibold">Audio Track Area</span>
+                      </div>
+                    </ResizablePanel>
+                    <ResizableHandle withHandle />
+                    <ResizablePanel defaultSize={50}>
+                      <div className="flex h-full items-center justify-center p-6">
+                        <span className="font-semibold">Lighting & Effects Area</span>
+                      </div>
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
                 </CardContent>
               </Card>
             </main>
@@ -91,3 +109,4 @@ const TimelineEditor = () => {
 };
 
 export default TimelineEditor;
+
