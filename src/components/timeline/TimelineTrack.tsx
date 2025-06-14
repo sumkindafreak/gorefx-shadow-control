@@ -1,13 +1,13 @@
-
 import React from 'react';
 import { Lightbulb, AudioLines, Wand2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Track } from './types';
+import { Track, TimelineEvent as TimelineEventType } from './types';
 import TimelineEvent from './TimelineEvent';
 
 interface TimelineTrackProps {
   track: Track;
   pixelsPerSecond: number;
+  onEventClick: (trackId: string, event: TimelineEventType) => void;
 }
 
 const trackTypeDetails: Record<Track['type'], { icon: React.ElementType; colorClasses: string; iconColor: string }> = {
@@ -28,7 +28,7 @@ const trackTypeDetails: Record<Track['type'], { icon: React.ElementType; colorCl
     },
 };
 
-const TimelineTrack: React.FC<TimelineTrackProps> = ({ track, pixelsPerSecond }) => {
+const TimelineTrack: React.FC<TimelineTrackProps> = ({ track, pixelsPerSecond, onEventClick }) => {
   const details = trackTypeDetails[track.type];
   const Icon = details.icon;
 
@@ -51,6 +51,7 @@ const TimelineTrack: React.FC<TimelineTrackProps> = ({ track, pixelsPerSecond })
             event={event}
             pixelsPerSecond={pixelsPerSecond}
             trackType={track.type}
+            onClick={() => onEventClick(track.id, event)}
           />
         ))}
       </div>

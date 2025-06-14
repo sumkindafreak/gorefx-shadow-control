@@ -7,6 +7,7 @@ interface TimelineEventProps {
   event: TimelineEventType;
   pixelsPerSecond: number;
   trackType: 'audio' | 'lighting' | 'effects';
+  onClick: () => void;
 }
 
 const eventColorClasses: Record<'audio' | 'lighting' | 'effects', string> = {
@@ -15,7 +16,7 @@ const eventColorClasses: Record<'audio' | 'lighting' | 'effects', string> = {
     effects: 'bg-purple-500/50 border-purple-600 dark:bg-purple-800/50 dark:border-purple-700 hover:bg-purple-500/70',
 };
 
-const TimelineEvent: React.FC<TimelineEventProps> = ({ event, pixelsPerSecond, trackType }) => {
+const TimelineEvent: React.FC<TimelineEventProps> = ({ event, pixelsPerSecond, trackType, onClick }) => {
   const style = {
     left: `${event.start * pixelsPerSecond}px`,
     width: `${event.duration * pixelsPerSecond}px`,
@@ -29,6 +30,7 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({ event, pixelsPerSecond, t
         eventColorClasses[trackType]
       )}
       title={`${event.name} (Start: ${event.start}s, Duration: ${event.duration}s)`}
+      onClick={onClick}
     >
       <span className="text-xs font-medium truncate pointer-events-none">{event.name}</span>
     </div>

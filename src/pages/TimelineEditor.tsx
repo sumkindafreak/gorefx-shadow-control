@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/AppSidebar";
@@ -19,11 +18,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Track } from "@/components/timeline/types";
+import { Track, TimelineEvent } from "@/components/timeline/types";
 import TimelineTrack from "@/components/timeline/TimelineTrack";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import Playhead from "@/components/timeline/Playhead";
+import EventEditor from "@/components/timeline/EventEditor";
 
 const TimelineEditor = () => {
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -32,6 +32,7 @@ const TimelineEditor = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [isLiveMode, setIsLiveMode] = useState(false);
+  const [editingEventInfo, setEditingEventInfo] = useState<{ trackId: string; event: TimelineEvent } | null>(null);
 
   const animationFrameRef = useRef<number>();
   const activeEventsRef = useRef(new Set<string>());
@@ -116,6 +117,31 @@ const TimelineEditor = () => {
       ]
     };
     setTracks(prevTracks => [...prevTracks, newTrack]);
+  };
+
+  const handleOpenEventEditor = (trackId: string, event: TimelineEvent) => {
+    setEditingEventInfo({ trackId, event });
+  };
+
+  const handleCloseEventEditor = () => {
+    setEditingEventInfo(null);
+  };
+  
+  const handleSaveEvent = (trackId: string, updatedEvent: TimelineEvent) => {
+    setTracks(prevTracks => 
+      prevTracks.map(track => {
+        if (track.id === trackId) {
+          return {
+            ...track,
+            events: track.events.map(event => 
+              event.id === updatedEvent.id ? updatedEvent : event
+            ),
+          };
+        }
+        return track;
+      })
+    );
+    handleCloseEventEditor();
   };
 
   const handlePlayPause = () => {
@@ -251,7 +277,11 @@ const TimelineEditor = () => {
                           {tracks.map((track, index) => (
                             <React.Fragment key={track.id}>
                               <ResizablePanel defaultSize={20} minSize={15}>
-                                <TimelineTrack track={track} pixelsPerSecond={pixelsPerSecond} />
+                                <TimelineTrack
+                                  track={track}
+                                  pixelsPerSecond={pixelsPerSecond}
+                                  onEventClick={handleOpenEventEditor}
+                                />
                               </ResizablePanel>
                               {index < tracks.length - 1 && <ResizableHandle withHandle />}
                             </React.Fragment>
@@ -274,6 +304,12 @@ const TimelineEditor = () => {
           <Footer />
         </div>
       </div>
+      <EventEditor
+        isOpen={!!editingEventInfo}
+        onClose={handleCloseEventEditor}
+        onSave={handleSaveEvent}
+        eventInfo={editingEventInfo}
+      />
     </SidebarProvider>
   );
 };
