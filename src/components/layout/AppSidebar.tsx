@@ -61,12 +61,14 @@ const AppSidebar = () => {
     return (
         <Sidebar>
             <SidebarHeader>
-                <div className="flex items-center gap-2 p-2 justify-center">
-                    <img src="/gorefx_logo.png" alt="GoreFX" className="w-8 h-8" />
-                    {state === 'expanded' && <h2 className="text-lg font-bold font-spectral tracking-widest">GoreFX</h2>}
+                <div className="flex items-center justify-center p-2 h-[60px]">
+                    <img
+                        src="/lovable-uploads/7b515ee1-bcf7-41c6-bc79-85cb6df5d491.png"
+                        alt="GoreFX"
+                        className={state === 'expanded' ? 'h-8 object-contain' : 'w-8 h-8 object-contain'}
+                    />
                 </div>
             </SidebarHeader>
-            {/* Ensure SidebarContent and ScrollArea fill available space for scrolling */}
             <SidebarContent className="p-0 h-0 flex-1">
                 <ScrollArea className="h-full">
                     <div className="flex flex-col gap-2 p-2">
@@ -75,7 +77,11 @@ const AppSidebar = () => {
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton asChild tooltip={item.title}>
                                         <Link to={item.to} onClick={handleMenuItemClick}>
-                                            <item.icon />
+                                            {item.title === 'HauntSync Community' ? (
+                                                <img src="/lovable-uploads/12c72298-b7aa-45cf-bfc7-92536da9392a.png" alt="HauntSync Community" className="w-4 h-4" />
+                                            ) : (
+                                                <item.icon />
+                                            )}
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
