@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/AppSidebar";
 import Header from "@/components/layout/Header";
@@ -22,11 +21,87 @@ import {
 import { Track } from "@/components/timeline/types";
 import TimelineTrack from "@/components/timeline/TimelineTrack";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 
 const TimelineEditor = () => {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [pixelsPerSecond, setPixelsPerSecond] = useState(50);
-  const [totalDuration, setTotalDuration] = useState(60);
+  const [totalDuration, setTotalDuration] = useState(60); // in seconds
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [isLiveMode, setIsLiveMode] = useState(false);
+
+  const animationFrameRef = useRef<number>();
+  const activeEventsRef = useRef(new Set<string>());
+
+  useEffect(() => {
+    if (!isPlaying) {
+      return;
+    }
+
+    let lastTime = performance.now();
+    const animate = (time: number) => {
+      const deltaTime = (time - lastTime) / 1000;
+      lastTime = time;
+
+      setCurrentTime(prevTime => {
+        const newTime = prevTime + deltaTime;
+        if (newTime >= totalDuration) {
+          setIsPlaying(false);
+          return totalDuration;
+        }
+        return newTime;
+      });
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isPlaying, totalDuration]);
+
+  useEffect(() => {
+    if (!isLiveMode) {
+      activeEventsRef.current.clear();
+      return;
+    }
+
+    if (!isPlaying) {
+      if (activeEventsRef.current.size > 0) {
+        console.log("Playback paused. Active events stopping:", [...activeEventsRef.current]);
+        activeEventsRef.current.clear();
+      }
+      return;
+    }
+
+    const newlyActive = new Set<string>();
+
+    tracks.forEach(track => {
+      track.events.forEach(event => {
+        const eventEnd = event.start + event.duration;
+        if (currentTime >= event.start && currentTime < eventEnd) {
+          newlyActive.add(event.id);
+          if (!activeEventsRef.current.has(event.id)) {
+            console.log(`EVENT START: ${event.name} on ${track.type} track "${track.name}"`);
+          }
+        }
+      });
+    });
+    
+    activeEventsRef.current.forEach(oldEventId => {
+      if (!newlyActive.has(oldEventId)) {
+        const event = tracks.flatMap(t => t.events).find(e => e.id === oldEventId);
+        if (event) {
+            console.log(`EVENT END: ${event.name}`);
+        }
+      }
+    });
+
+    activeEventsRef.current = newlyActive;
+  }, [currentTime, isPlaying, isLiveMode, tracks]);
 
   const addTrack = (type: Track['type']) => {
     const newTrack: Track = {
@@ -39,6 +114,31 @@ const TimelineEditor = () => {
       ]
     };
     setTracks(prevTracks => [...prevTracks, newTrack]);
+  };
+
+  const handlePlayPause = () => {
+    if (currentTime >= totalDuration) {
+        setCurrentTime(0);
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleSkipBack = () => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+  };
+    
+  const handleSkipForward = () => {
+    setIsPlaying(false);
+    setCurrentTime(totalDuration);
+  };
+
+  const formatTime = (timeInSeconds: number) => {
+    const totalSeconds = Math.floor(timeInSeconds);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const milliseconds = Math.floor((timeInSeconds - totalSeconds) * 100);
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(2, '0')}`;
   };
 
   return (
@@ -77,23 +177,33 @@ const TimelineEditor = () => {
                 <CardHeader>
                   <CardTitle>Playback Controls</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex justify-between items-center">
                   <div className="flex items-center gap-4">
-                    <Button variant="outline" size="sm">
-                      <SkipBack className="w-4 h-4" />
+                    <Button variant="outline" size="sm" onClick={handleSkipBack}>
+                      <SkipBack />
                     </Button>
-                    <Button size="sm">
-                      <Play className="w-4 h-4" />
+                    <Button size="sm" onClick={handlePlayPause}>
+                      {isPlaying ? <Pause /> : <Play />}
                     </Button>
-                    <Button variant="outline" size="sm">
-                      <Pause className="w-4 h-4" />
+                    <Button variant="outline" size="sm" onClick={handleSkipForward}>
+                      <SkipForward />
                     </Button>
-                    <Button variant="outline" size="sm">
-                      <SkipForward className="w-4 h-4" />
-                    </Button>
-                    <div className="ml-4 text-sm text-muted-foreground">
-                      00:02:45 / 05:30:00
+                    <div className="ml-4 text-sm text-muted-foreground font-mono w-32">
+                      {formatTime(currentTime)} / {formatTime(totalDuration).split('.')[0]}
                     </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                        id="live-mode"
+                        checked={isLiveMode}
+                        onCheckedChange={setIsLiveMode}
+                    />
+                    <label
+                        htmlFor="live-mode"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        Live Mode
+                    </label>
                   </div>
                 </CardContent>
               </Card>
@@ -128,24 +238,29 @@ const TimelineEditor = () => {
                 <CardContent>
                   {tracks.length > 0 ? (
                     <ScrollArea className="w-full whitespace-nowrap rounded-lg border">
-                      <ResizablePanelGroup
-                        direction="vertical"
-                        className="min-h-[400px]"
+                      <div
+                        className="relative"
                         style={{ minWidth: `${totalDuration * pixelsPerSecond + 260}px` }}
                       >
-                        {tracks.map((track, index) => (
-                          <React.Fragment key={track.id}>
-                            <ResizablePanel defaultSize={20} minSize={15}>
-                              <TimelineTrack track={track} pixelsPerSecond={pixelsPerSecond} />
-                            </ResizablePanel>
-                            {index < tracks.length - 1 && <ResizableHandle withHandle />}
-                          </React.Fragment>
-                        ))}
-                      </ResizablePanelGroup>
+                        <ResizablePanelGroup
+                          direction="vertical"
+                          className="min-h-[400px]"
+                        >
+                          {tracks.map((track, index) => (
+                            <React.Fragment key={track.id}>
+                              <ResizablePanel defaultSize={20} minSize={15}>
+                                <TimelineTrack track={track} pixelsPerSecond={pixelsPerSecond} />
+                              </ResizablePanel>
+                              {index < tracks.length - 1 && <ResizableHandle withHandle />}
+                            </React.Fragment>
+                          ))}
+                        </ResizablePanelGroup>
+                        <Playhead currentTime={currentTime} pixelsPerSecond={pixelsPerSecond} />
+                      </div>
                       <ScrollBar orientation="horizontal" />
                     </ScrollArea>
                   ) : (
-                     <div className="space-y-4 text-center text-muted-foreground py-16 border-2 border-dashed rounded-lg">
+                    <div className="space-y-4 text-center text-muted-foreground py-16 border-2 border-dashed rounded-lg">
                       <p className="font-semibold">This timeline is empty.</p>
                       <p className="text-sm">Click "Add Track" to add a new track to get started.</p>
                     </div>
