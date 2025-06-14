@@ -10,8 +10,83 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Power, Volume2, Lightbulb, Zap, Music } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import WebSocketConnection from "@/components/WebSocketConnection";
+import { useState } from "react";
 
 const LiveControls = () => {
+  const { isConnected, sendCommand } = useWebSocket();
+  const [masterVolume, setMasterVolume] = useState([75]);
+  const [lightingBrightness, setLightingBrightness] = useState([80]);
+  const [audioLevel, setAudioLevel] = useState([65]);
+
+  const handleMasterPower = (enabled: boolean) => {
+    sendCommand({
+      type: 'system',
+      action: 'master_power',
+      value: enabled
+    });
+  };
+
+  const handleEmergencyStop = () => {
+    sendCommand({
+      type: 'system',
+      action: 'emergency_stop'
+    });
+  };
+
+  const handleVolumeChange = (value: number[]) => {
+    setMasterVolume(value);
+    sendCommand({
+      type: 'audio',
+      action: 'volume',
+      value: value[0]
+    });
+  };
+
+  const handleLightingToggle = (zone: string, enabled: boolean) => {
+    sendCommand({
+      type: 'lighting',
+      action: 'zone_toggle',
+      value: enabled,
+      channel: zone === 'front_yard' ? 1 : zone === 'porch' ? 2 : 3
+    });
+  };
+
+  const handleBrightnessChange = (value: number[]) => {
+    setLightingBrightness(value);
+    sendCommand({
+      type: 'lighting',
+      action: 'brightness',
+      value: value[0]
+    });
+  };
+
+  const handleAudioToggle = (zone: string, enabled: boolean) => {
+    sendCommand({
+      type: 'audio',
+      action: 'zone_toggle',
+      value: enabled,
+      channel: zone === 'main' ? 1 : 2
+    });
+  };
+
+  const handleAudioLevelChange = (value: number[]) => {
+    setAudioLevel(value);
+    sendCommand({
+      type: 'audio',
+      action: 'level',
+      value: value[0]
+    });
+  };
+
+  const handleSpecialEffect = (effect: string) => {
+    sendCommand({
+      type: 'effects',
+      action: effect
+    });
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen w-full flex bg-background font-orbitron">
@@ -31,8 +106,13 @@ const LiveControls = () => {
             <main className="flex-1 space-y-6">
               <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold font-spectral">Live Controls</h1>
-                <Badge variant="outline" className="bg-green-500/10 text-green-700">LIVE</Badge>
+                <Badge variant="outline" className={isConnected ? "bg-green-500/10 text-green-700" : "bg-red-500/10 text-red-700"}>
+                  {isConnected ? "LIVE" : "OFFLINE"}
+                </Badge>
               </div>
+
+              {/* WebSocket Connection */}
+              <WebSocketConnection />
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Master Controls */}
@@ -46,15 +126,32 @@ const LiveControls = () => {
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span>System Power</span>
-                      <Switch defaultChecked />
+                      <Switch 
+                        defaultChecked 
+                        onCheckedChange={handleMasterPower}
+                        disabled={!isConnected}
+                      />
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Emergency Stop</span>
-                      <Button variant="destructive" size="sm">STOP</Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={handleEmergencyStop}
+                        disabled={!isConnected}
+                      >
+                        STOP
+                      </Button>
                     </div>
                     <div className="space-y-2">
                       <span>Master Volume</span>
-                      <Slider defaultValue={[75]} max={100} step={1} />
+                      <Slider 
+                        value={masterVolume}
+                        onValueChange={handleVolumeChange}
+                        max={100} 
+                        step={1}
+                        disabled={!isConnected}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -70,19 +167,36 @@ const LiveControls = () => {
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span>Front Yard</span>
-                      <Switch defaultChecked />
+                      <Switch 
+                        defaultChecked 
+                        onCheckedChange={(checked) => handleLightingToggle('front_yard', checked)}
+                        disabled={!isConnected}
+                      />
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Porch Lights</span>
-                      <Switch />
+                      <Switch 
+                        onCheckedChange={(checked) => handleLightingToggle('porch', checked)}
+                        disabled={!isConnected}
+                      />
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Strobe Effects</span>
-                      <Switch defaultChecked />
+                      <Switch 
+                        defaultChecked 
+                        onCheckedChange={(checked) => handleLightingToggle('strobe', checked)}
+                        disabled={!isConnected}
+                      />
                     </div>
                     <div className="space-y-2">
                       <span>Brightness</span>
-                      <Slider defaultValue={[80]} max={100} step={1} />
+                      <Slider 
+                        value={lightingBrightness}
+                        onValueChange={handleBrightnessChange}
+                        max={100} 
+                        step={1}
+                        disabled={!isConnected}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -98,15 +212,29 @@ const LiveControls = () => {
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span>Main Speakers</span>
-                      <Switch defaultChecked />
+                      <Switch 
+                        defaultChecked 
+                        onCheckedChange={(checked) => handleAudioToggle('main', checked)}
+                        disabled={!isConnected}
+                      />
                     </div>
                     <div className="flex items-center justify-between">
                       <span>Ambient Sounds</span>
-                      <Switch defaultChecked />
+                      <Switch 
+                        defaultChecked 
+                        onCheckedChange={(checked) => handleAudioToggle('ambient', checked)}
+                        disabled={!isConnected}
+                      />
                     </div>
                     <div className="space-y-2">
                       <span>Sound Level</span>
-                      <Slider defaultValue={[65]} max={100} step={1} />
+                      <Slider 
+                        value={audioLevel}
+                        onValueChange={handleAudioLevelChange}
+                        max={100} 
+                        step={1}
+                        disabled={!isConnected}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -120,14 +248,29 @@ const LiveControls = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <Button className="w-full" variant="outline">
+                    <Button 
+                      className="w-full" 
+                      variant="outline"
+                      onClick={() => handleSpecialEffect('jump_scare')}
+                      disabled={!isConnected}
+                    >
                       <Music className="w-4 h-4 mr-2" />
                       Trigger Jump Scare
                     </Button>
-                    <Button className="w-full" variant="outline">
+                    <Button 
+                      className="w-full" 
+                      variant="outline"
+                      onClick={() => handleSpecialEffect('fog_machine')}
+                      disabled={!isConnected}
+                    >
                       Fog Machine
                     </Button>
-                    <Button className="w-full" variant="outline">
+                    <Button 
+                      className="w-full" 
+                      variant="outline"
+                      onClick={() => handleSpecialEffect('thunder')}
+                      disabled={!isConnected}
+                    >
                       Thunder Effect
                     </Button>
                   </CardContent>
