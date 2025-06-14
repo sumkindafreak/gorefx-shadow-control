@@ -169,14 +169,14 @@ const Weather = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="font-medium">Auto-Cancel in Rain</span>
-                        <p className="text-sm text-muted-foreground">Stop shows when precipitation > 50%</p>
+                        <p className="text-sm text-muted-foreground">Stop shows when precipitation {">"} 50%</p>
                       </div>
                       <Switch defaultChecked />
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="font-medium">Wind Safety Mode</span>
-                        <p className="text-sm text-muted-foreground">Reduce effects when winds > 25 mph</p>
+                        <p className="text-sm text-muted-foreground">Reduce effects when winds {">"} 25 mph</p>
                       </div>
                       <Switch defaultChecked />
                     </div>
