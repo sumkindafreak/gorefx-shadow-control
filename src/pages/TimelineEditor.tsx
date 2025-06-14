@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/layout/AppSidebar";
@@ -15,6 +14,8 @@ import { useEventTracker } from "@/hooks/useEventTracker";
 import PlaybackControls from "@/components/timeline/PlaybackControls";
 import TimelineHeader from "@/components/timeline/TimelineHeader";
 import TimelineContainer from "@/components/timeline/TimelineContainer";
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { restrictToHorizontalAxis } from '@dnd-kit/modifiers';
 
 const TimelineEditor = () => {
   const [history, setHistory] = useState<Track[][]>([[]]);
@@ -54,15 +55,26 @@ const TimelineEditor = () => {
   };
 
   const handleAddEvent = (trackId: string) => {
-    const newEvent: TimelineEvent = {
-      id: `evt-${Date.now()}`,
-      name: 'New Event',
-      start: 0,
-      duration: 5,
-      command: ''
-    };
-    // Automatically open editor for the new event, without adding it to the state yet.
-    setEditingEventInfo({ trackId, event: newEvent });
+    updateTracks(prevTracks =>
+      prevTracks.map(track => {
+        if (track.id === trackId) {
+          const newEvent: TimelineEvent = {
+            id: `evt-${Date.now()}`,
+            name: 'New Event',
+            start: 0,
+            duration: 5,
+            command: ''
+          };
+          // Automatically open editor for the new event
+          setEditingEventInfo({ trackId, event: newEvent });
+          return {
+            ...track,
+            events: [...track.events, newEvent]
+          };
+        }
+        return track;
+      })
+    );
   };
 
   const handleOpenEventEditor = (trackId: string, event: TimelineEvent) => {
@@ -73,32 +85,48 @@ const TimelineEditor = () => {
     setEditingEventInfo(null);
   };
   
-  const handleSaveEvent = (trackId: string, eventToSave: TimelineEvent) => {
+  const handleSaveEvent = (trackId: string, updatedEvent: TimelineEvent) => {
     updateTracks(prevTracks => 
       prevTracks.map(track => {
         if (track.id === trackId) {
-          const eventExists = track.events.some(e => e.id === eventToSave.id);
-
-          if (eventExists) {
-            // Update existing event
-            return {
-              ...track,
-              events: track.events.map(event => 
-                event.id === eventToSave.id ? eventToSave : event
-              ),
-            };
-          } else {
-            // Add new event
-            return {
-              ...track,
-              events: [...track.events, eventToSave],
-            };
-          }
+          return {
+            ...track,
+            events: track.events.map(event => 
+              event.id === updatedEvent.id ? updatedEvent : event
+            ),
+          };
         }
         return track;
       })
     );
     handleCloseEventEditor();
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, delta } = event;
+    if (delta.x === 0) return;
+
+    const eventId = active.id as string;
+
+    updateTracks(prevTracks => 
+      prevTracks.map(track => {
+        const eventIndex = track.events.findIndex(e => e.id === eventId);
+        if (eventIndex === -1) {
+          return track;
+        }
+        
+        const eventToMove = track.events[eventIndex];
+        const newStart = eventToMove.start + delta.x / pixelsPerSecond;
+        // Round to one decimal place
+        const clampedStart = Math.round(newStart * 10) / 10;
+        const finalStart = Math.max(0, Math.min(clampedStart, totalDuration - eventToMove.duration));
+
+        const updatedEvents = [...track.events];
+        updatedEvents[eventIndex] = { ...eventToMove, start: finalStart };
+
+        return { ...track, events: updatedEvents };
+      })
+    );
   };
 
   const handleUndo = () => {
@@ -159,14 +187,16 @@ const TimelineEditor = () => {
                   canUndo={canUndo}
                 />
                 <CardContent>
-                  <TimelineContainer
-                    tracks={tracks}
-                    totalDuration={totalDuration}
-                    pixelsPerSecond={pixelsPerSecond}
-                    currentTime={currentTime}
-                    onEventClick={handleOpenEventEditor}
-                    onAddEvent={handleAddEvent}
-                  />
+                  <DndContext onDragEnd={handleDragEnd} modifiers={[restrictToHorizontalAxis]}>
+                    <TimelineContainer
+                      tracks={tracks}
+                      totalDuration={totalDuration}
+                      pixelsPerSecond={pixelsPerSecond}
+                      currentTime={currentTime}
+                      onEventClick={handleOpenEventEditor}
+                      onAddEvent={handleAddEvent}
+                    />
+                  </DndContext>
                 </CardContent>
               </Card>
             </main>

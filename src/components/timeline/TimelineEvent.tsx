@@ -2,6 +2,8 @@
 import React from 'react';
 import { TimelineEvent as TimelineEventType } from './types';
 import { cn } from '@/lib/utils';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 
 interface TimelineEventProps {
   event: TimelineEventType;
@@ -17,22 +19,31 @@ const eventColorClasses: Record<'audio' | 'lighting' | 'effects', string> = {
 };
 
 const TimelineEvent: React.FC<TimelineEventProps> = ({ event, pixelsPerSecond, trackType, onClick }) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: event.id,
+  });
+
   const style = {
     left: `${event.start * pixelsPerSecond}px`,
     width: `${event.duration * pixelsPerSecond}px`,
+    transform: CSS.Translate.toString(transform),
   };
   
   const title = `${event.name} (Start: ${event.start}s, Duration: ${event.duration}s)${event.command ? `\nCommand: ${event.command}`: ''}`;
 
   return (
     <div
+      ref={setNodeRef}
       style={style}
       className={cn(
-        "absolute top-1/2 -translate-y-1/2 h-4/5 rounded-md border text-white flex items-center px-2 cursor-pointer transition-colors",
+        "absolute top-1/2 -translate-y-1/2 h-4/5 rounded-md border text-white flex items-center px-2 transition-colors z-10",
+        isDragging ? 'cursor-grabbing shadow-lg' : 'cursor-grab',
         eventColorClasses[trackType]
       )}
       title={title}
       onClick={onClick}
+      {...attributes}
+      {...listeners}
     >
       <span className="text-xs font-medium truncate pointer-events-none">{event.name}</span>
     </div>
