@@ -2,15 +2,12 @@
 import React from 'react';
 import { Lightbulb, AudioLines, Wand2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-export interface Track {
-  id: string;
-  type: 'audio' | 'lighting' | 'effects';
-  name: string;
-}
+import { Track } from './types';
+import TimelineEvent from './TimelineEvent';
 
 interface TimelineTrackProps {
   track: Track;
+  pixelsPerSecond: number;
 }
 
 const trackTypeDetails: Record<Track['type'], { icon: React.ElementType; colorClasses: string; iconColor: string }> = {
@@ -31,18 +28,31 @@ const trackTypeDetails: Record<Track['type'], { icon: React.ElementType; colorCl
     },
 };
 
-const TimelineTrack: React.FC<TimelineTrackProps> = ({ track }) => {
+const TimelineTrack: React.FC<TimelineTrackProps> = ({ track, pixelsPerSecond }) => {
   const details = trackTypeDetails[track.type];
   const Icon = details.icon;
 
   return (
-    <div className="h-full p-2">
+    <div className="h-full p-2 grid grid-cols-[240px_1fr] gap-2">
+      {/* Track Header */}
       <div className={cn(
-          "h-full w-full rounded-md border flex items-center justify-start p-4", 
+          "h-full rounded-md border flex items-center justify-start p-4", 
           details.colorClasses
         )}>
         <Icon className={cn("w-5 h-5 mr-3 shrink-0", details.iconColor)} />
         <span className="font-semibold text-sm truncate">{track.name}</span>
+      </div>
+
+      {/* Track Lane */}
+      <div className="relative h-full bg-muted/30 rounded-md">
+        {track.events.map(event => (
+          <TimelineEvent
+            key={event.id}
+            event={event}
+            pixelsPerSecond={pixelsPerSecond}
+            trackType={track.type}
+          />
+        ))}
       </div>
     </div>
   );

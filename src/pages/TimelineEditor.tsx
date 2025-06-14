@@ -19,16 +19,24 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import TimelineTrack, { Track } from "@/components/timeline/TimelineTrack";
+import { Track } from "@/components/timeline/types";
+import TimelineTrack from "@/components/timeline/TimelineTrack";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const TimelineEditor = () => {
   const [tracks, setTracks] = useState<Track[]>([]);
+  const [pixelsPerSecond, setPixelsPerSecond] = useState(50);
+  const [totalDuration, setTotalDuration] = useState(60);
 
   const addTrack = (type: Track['type']) => {
     const newTrack: Track = {
       id: `track-${Date.now()}`,
       type: type,
-      name: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Track ${tracks.filter(t => t.type === type).length + 1}`
+      name: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Track ${tracks.filter(t => t.type === type).length + 1}`,
+      events: [
+        { id: `evt-${Date.now()}-1`, name: 'Sample Event', start: 2, duration: 5 },
+        { id: `evt-${Date.now()}-2`, name: 'Another Event', start: 10, duration: 8 },
+      ]
     };
     setTracks(prevTracks => [...prevTracks, newTrack]);
   };
@@ -119,19 +127,23 @@ const TimelineEditor = () => {
                 </CardHeader>
                 <CardContent>
                   {tracks.length > 0 ? (
-                    <ResizablePanelGroup
-                      direction="vertical"
-                      className="min-h-[400px] rounded-lg border"
-                    >
-                      {tracks.map((track, index) => (
-                        <React.Fragment key={track.id}>
-                          <ResizablePanel>
-                            <TimelineTrack track={track} />
-                          </ResizablePanel>
-                          {index < tracks.length - 1 && <ResizableHandle withHandle />}
-                        </React.Fragment>
-                      ))}
-                    </ResizablePanelGroup>
+                    <ScrollArea className="w-full whitespace-nowrap rounded-lg border">
+                      <ResizablePanelGroup
+                        direction="vertical"
+                        className="min-h-[400px]"
+                        style={{ minWidth: `${totalDuration * pixelsPerSecond + 260}px` }}
+                      >
+                        {tracks.map((track, index) => (
+                          <React.Fragment key={track.id}>
+                            <ResizablePanel defaultSize={20} minSize={15}>
+                              <TimelineTrack track={track} pixelsPerSecond={pixelsPerSecond} />
+                            </ResizablePanel>
+                            {index < tracks.length - 1 && <ResizableHandle withHandle />}
+                          </React.Fragment>
+                        ))}
+                      </ResizablePanelGroup>
+                      <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
                   ) : (
                      <div className="space-y-4 text-center text-muted-foreground py-16 border-2 border-dashed rounded-lg">
                       <p className="font-semibold">This timeline is empty.</p>
